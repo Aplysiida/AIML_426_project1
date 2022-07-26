@@ -8,26 +8,34 @@ def read_dataset(filepath):
     df = pd.read_table(filepath,sep=' ')
     columns = (int(df.columns.values[0]),int(df.columns.values[1]))
     df.columns.values[0], df.columns.values[1] = 'Value', 'Weight'  #rename column names to Value, Weight
-    dataset = (num_items, bag_capacity, dataframe) = (columns[0], columns[1], df) 
+    dataset = (columns[0], columns[1], df) #([0]num_items, [1]bag_capacity, [2]dataframe)
     return dataset
 
-
 """
+----------GA for knapsack problem specifically----------
+
 evaluate fitness of individual in knapsack problem
 """
 def individual_knapsack_fitness(individual, dataset):
     #decode knapsack chromosome to values and weights
     value,weight = zip(*[ dataset[2].iloc[i] for i, value in enumerate(individual) if (value == 1) ])
-    return np.sum(value)
+    penalty_coeff = 10.0 #10 is enough to impact fitness if violate constraint
+    return np.sum(value) - penalty_coeff*np.max([0, (np.sum(weight)-dataset[1])]) 
 
 """
-----------GA implementation-----------
+----------GA implementation----------
 
 generate GA individual for population
 """
 def generate_individual(num_items):
     rng = np.random.default_rng()
     return rng.integers(low=0,high=2,size=8)
+
+def one_point_crossover(parent1, parent2):
+    split_pos = len(parent1)/2
+    child1 = parent1[0:split_pos] + parent2[split_pos:len(parent2)] # [p1/p2]
+    child2 = parent2[0:split_pos] + parent1[split_pos:len(parent2)] # [p2/p1]
+    return child1
 
 """
 evaluate fitness of entire population
