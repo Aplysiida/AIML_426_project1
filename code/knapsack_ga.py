@@ -29,15 +29,14 @@ def individual_knapsack_fitness(individual, dataset):
 
 generate GA individual for population
 """
-def generate_individual(num_items):
-    rng = np.random.default_rng()
+def generate_individual(num_items, rng):
     return rng.integers(low=0,high=2,size=8)
 
 """
 one-point crossover operator
 """
-def one_point_crossover(parent1, parent2):
-    split_pos = np.random.default_rng().integers(low=1,high=(len(parent1)-1))
+def one_point_crossover(parent1, parent2, rng):
+    split_pos = rng.integers(low=1,high=(len(parent1)-1))
     child1 = np.concatenate((parent1[0:split_pos],parent2[split_pos:len(parent2)]))
     child2 = np.concatenate((parent2[0:split_pos],parent1[split_pos:len(parent2)]))
     return (child1, child2)
@@ -45,8 +44,8 @@ def one_point_crossover(parent1, parent2):
 """
 flip mutation operator
 """
-def mutation(instance):
-    mutation_pos = np.random.default_rng().integers(low=0,high=(len(instance)))
+def mutation(instance, rng):
+    mutation_pos = rng.integers(low=0,high=(len(instance)))
     instance[mutation_pos] = 0 if(instance[mutation_pos] == 1) else 1 #flip mutation
     return instance
 
@@ -67,11 +66,11 @@ def gen_new_pop(pop, rng, prob, pop_size, elitism_rate, crossover_rate, mutation
     new_pop=[]
     new_pop += pop[0:int(elitism_rate * pop_size)] #elitism
     while(len(new_pop) < pop_size):
-        parents = np.random.choice(pop_size,size=2,p=prob)  #selection
-        if (np.random.default_rng().random() <= crossover_rate):
-            children = one_point_crossover(pop[parents[0]], pop[parents[1]])#crossover
+        parents = rng.choice(pop_size,size=2,p=prob)  #selection
+        if (rng.random() <= crossover_rate):
+            children = one_point_crossover(pop[parents[0]], pop[parents[1]], rng)#crossover
             #mutation
-            children = [mutation(child) if(np.random.default_rng().random() <= mutation_rate) else child for child in children]
+            children = [mutation(child, rng) if(rng.random() <= mutation_rate) else child for child in children]
             new_pop += children
     return new_pop[:pop_size]#avoid new population being bigger than correct pop size
 
@@ -79,20 +78,19 @@ def gen_new_pop(pop, rng, prob, pop_size, elitism_rate, crossover_rate, mutation
 calculate optimal solution through GA
 """
 #todo: experiment with pop size
-def GA_solution(dataset, pop_size = 100, max_iter = 200, elitism_rate = 0.1, crossover_rate = 1.0, mutation_rate = 0.3):
-    rng = np.random.default_rng()   #set up rng so can get consistent results based on seed
+def GA_solution(dataset, pop_size = 5, max_iter = 5, elitism_rate = 0.1, crossover_rate = 1.0, mutation_rate = 0.3):
+    rng = np.random.default_rng(12)   #set up rng so can get consistent results based on seed
 
-    pop=[generate_individual(dataset[0]) for i in range(pop_size)]
+    pop=[generate_individual(dataset[0], rng) for i in range(pop_size)]
     fitness_func = lambda x : individual_knapsack_fitness(x,dataset)
     #prev_fitness = 0.0
 
     for i in range(max_iter):   #repeat until stopping criteria is met
         fitness = fitness_pop_eval(pop, fitness_func)  #calc total fitness of pope
-
         best_individual = pop[0]    #get best individual from pop
 
         prob = prob_calc(pop, fitness_func,fitness) #calc probabilities for roulette wheel
-        new_pop = gen_new_pop(pop, prob, pop_size, elitism_rate, crossover_rate, mutation_rate)
+        new_pop = gen_new_pop(pop, rng, prob, pop_size, elitism_rate, crossover_rate, mutation_rate)
         pop = new_pop
 
     print('--------')
