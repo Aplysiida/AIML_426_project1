@@ -17,6 +17,7 @@ def read_dataset(filepath):
 evaluate fitness of individual in knapsack problem
 """
 def individual_knapsack_fitness(individual, dataset):
+    if(not individual.__contains__(1)): return 0    #to avoid empty knapsack situation
     #decode knapsack chromosome to values and weights
     value,weight = zip(*[ dataset[2].iloc[i] for i, value in enumerate(individual) if (value == 1) ])
     penalty_coeff = 10.0 #10 is enough to impact fitness if violate constraint
@@ -54,10 +55,7 @@ calculate probabilities for roulette wheel selection
 """
 def prob_calc(population, fit_func, pop_fitness):
     return list(map(lambda x : fit_func(x)/pop_fitness, population))
-    
-    #prob = fit_func(instance)/pop_fitness
-    #r = np.random.default_rng().random()
-    #return (r <= prob)
+
 """
 evaluate fitness of entire population and order population by fitness
 """
@@ -65,17 +63,7 @@ def fitness_pop_eval(population, fit_func):
     population.sort(key=fit_func,reverse=True)
     return np.sum(list(map(fit_func, population)))
 
-"""
-calculate optimal solution through GA
-"""
-#todo: experiment with pop size
-def GA_solution(dataset, pop_size = 10, max_iter = 2000, elitism_rate = 0.03, crossover_rate = 1.0, mutation_rate = 0.3):
-    pop=[generate_individual(dataset[0]) for i in range(pop_size)]
-    fitness_func = lambda x : individual_knapsack_fitness(x,dataset)
-    fitness = fitness_pop_eval(pop, fitness_func)  #calc total fitness of pop
-    prob = prob_calc(pop, fitness_func,fitness)
-
-    #generate new pop
+def gen_new_pop(pop, rng, prob, pop_size, elitism_rate, crossover_rate, mutation_rate):
     new_pop=[]
     new_pop += pop[0:int(elitism_rate * pop_size)] #elitism
     while(len(new_pop) < pop_size):
@@ -85,15 +73,34 @@ def GA_solution(dataset, pop_size = 10, max_iter = 2000, elitism_rate = 0.03, cr
             #mutation
             children = [mutation(child) if(np.random.default_rng().random() <= mutation_rate) else child for child in children]
             new_pop += children
-    #repeat until stopping criteria
-        
-            #for each individual
-                #selection
-                #crossover and mutation
-                #children
-        #evaluate fitness of new pop
+    return new_pop[:pop_size]#avoid new population being bigger than correct pop size
 
-    #get best individual from final pop
+"""
+calculate optimal solution through GA
+"""
+#todo: experiment with pop size
+def GA_solution(dataset, pop_size = 100, max_iter = 200, elitism_rate = 0.1, crossover_rate = 1.0, mutation_rate = 0.3):
+    rng = np.random.default_rng()   #set up rng so can get consistent results based on seed
+
+    pop=[generate_individual(dataset[0]) for i in range(pop_size)]
+    fitness_func = lambda x : individual_knapsack_fitness(x,dataset)
+    #prev_fitness = 0.0
+
+    for i in range(max_iter):   #repeat until stopping criteria is met
+        fitness = fitness_pop_eval(pop, fitness_func)  #calc total fitness of pope
+
+        best_individual = pop[0]    #get best individual from pop
+
+        prob = prob_calc(pop, fitness_func,fitness) #calc probabilities for roulette wheel
+        new_pop = gen_new_pop(pop, prob, pop_size, elitism_rate, crossover_rate, mutation_rate)
+        pop = new_pop
+
+    print('--------')
+    for p in pop:
+        print(p)
+    print('--------')
+
+    print('best_individual = ',best_individual,' fitness = ', fitness_func(best_individual))   
 
 if __name__=="__main__":
     dataset1 = read_dataset('knapsack-data/10_269')
