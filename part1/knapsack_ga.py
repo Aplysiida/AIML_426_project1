@@ -78,32 +78,39 @@ def gen_new_pop(pop, rng, prob, pop_size, elitism_rate, crossover_rate, mutation
 calculate optimal solution through GA
 """
 #todo: experiment with pop size
-def GA_solution(dataset, pop_size = 5, max_iter = 5, elitism_rate = 0.1, crossover_rate = 1.0, mutation_rate = 0.3):
-    rng = np.random.default_rng(12)   #set up rng so can get consistent results based on seed
+def GA_solution(dataset, seed, pop_size = 100, max_iter = 200, elitism_rate = 0.1, crossover_rate = 1.0, mutation_rate = 0.9):
+    rng = np.random.default_rng(seed)   #set up rng so can get consistent results based on seed
 
     pop=[generate_individual(dataset[0], rng) for i in range(pop_size)]
     fitness_func = lambda x : individual_knapsack_fitness(x,dataset)
-    #prev_fitness = 0.0
+    prev_fitness = 0.0
 
     for i in range(max_iter):   #repeat until stopping criteria is met
         fitness = fitness_pop_eval(pop, fitness_func)  #calc total fitness of pope
+        if(abs(fitness-prev_fitness) < 0.1): break  #check for convergence
+        prev_fitness = fitness
         best_individual = pop[0]    #get best individual from pop
 
         prob = prob_calc(pop, fitness_func,fitness) #calc probabilities for roulette wheel
         new_pop = gen_new_pop(pop, rng, prob, pop_size, elitism_rate, crossover_rate, mutation_rate)
         pop = new_pop
 
+    value_sum = lambda inst : np.sum([dataset[2].iloc[i]['Value'] for i, value in enumerate(pop[0]) if (value == 1)])
     print('--------')
     for p in pop:
-        print(p)
+        print(p,' fitness = ',value_sum(p))
     print('--------')
 
-    print('best_individual = ',best_individual,' fitness = ', fitness_func(best_individual))   
+    print('best_individual = ',best_individual,' fitness = ', value_sum(best_individual))   
 
 if __name__=="__main__":
     dataset1 = read_dataset('knapsack-data/10_269')
     dataset2 = read_dataset('knapsack-data/23_10000')
     dataset3 = read_dataset('knapsack-data/100_1000')
     
-    GA_solution(dataset1)
+    rng = np.random.default_rng(123)
+
+    for i in rng.integers(low=0,high=2000,size=5):
+        print('seed = ',i)
+        GA_solution(dataset1,i)
     
