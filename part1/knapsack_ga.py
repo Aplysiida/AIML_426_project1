@@ -17,11 +17,11 @@ def read_dataset(filepath):
 
 evaluate fitness of individual in knapsack problem
 """
-def individual_knapsack_fitness(individual, dataset):
+def individual_knapsack_fitness(individual, penalty_coeff, dataset):
     if(not individual.__contains__(1)): return 0    #to avoid empty knapsack situation
     #decode knapsack chromosome to values and weights
     value,weight = zip(*[ dataset[2].iloc[i] for i, value in enumerate(individual) if (value == 1) ])
-    penalty_coeff = 10.0 #10 is enough to impact fitness if violate constraint
+    #penalty_coeff = 3 #3 is enough to impact fitness if violate constraint
     #keeping fitness >= 0 since negative will break probability calculations
     return np.max((0, np.sum(value) - penalty_coeff*np.max((0, (np.sum(weight)-dataset[1])))))
 
@@ -54,6 +54,7 @@ def mutation(instance, rng):
 calculate probabilities for roulette wheel selection
 """
 def prob_calc(population, fit_func, pop_fitness):
+    if(pop_fitness == 0): return [1.0/len(population) for _ in population] #if pop fitness 0, then all individuals are equally nonfit
     return list(map(lambda x : fit_func(x)/pop_fitness, population))
 
 """
@@ -79,21 +80,23 @@ def gen_new_pop(pop, rng, prob, pop_size, elitism_rate, crossover_rate, mutation
 calculate optimal solution through GA
 """
 #todo: experiment with pop size
-def GA_solution(dataset, seed, pop_size = 100, max_iter = 20, elitism_rate = 0.1, crossover_rate = 1.0, mutation_rate = 0.9):
+def GA_solution(dataset, seed, pop_size = 100, max_iter = 200, penalty_coeff = 1, elitism_rate = 0.1, crossover_rate = 1.0, mutation_rate = 0.9):
     rng = np.random.default_rng(seed)   #set up rng so can get consistent results based on seed
 
     pop=[generate_individual(dataset[0], rng) for i in range(pop_size)]
-    fitness_func = lambda x : individual_knapsack_fitness(x,dataset)
+    fitness_func = lambda x : individual_knapsack_fitness(x,penalty_coeff,dataset)
     num_iterations = 0   #keeps track of number of iterations done
     avg_best = []
+    prev_avg = -10.0    #start at -10 so never converge at beginning
 
     for i in range(max_iter):   #repeat until stopping criteria is met
         fitness = fitness_pop_eval(pop, fitness_func)  #calc total fitness of pope
         #if(abs(fitness-prev_fitness) < 0.1): break  #check for convergence
         
         avg = np.average([ fitness_func(individual) for individual in pop[:5]])
+        #if():   #check for convergence
         avg_best.append(avg)
-        best_individual = pop[0]    #get best individual from pop
+        #best_individual = pop[0]    #get best individual from pop
 
         prob = prob_calc(pop, fitness_func,fitness) #calc probabilities for roulette wheel
         new_pop = gen_new_pop(pop, rng, prob, pop_size, elitism_rate, crossover_rate, mutation_rate)
@@ -132,9 +135,14 @@ def draw_convergence_curves(x_values, y_values, optimal_value, dataset_name, see
 
 if __name__=="__main__":
     dataset1 = ('10_269', read_dataset('knapsack-data/10_269'), 295)
-    dataset2 = read_dataset('knapsack-data/23_10000')
-    dataset3 = read_dataset('knapsack-data/100_1000')
+    dataset2 = ('23_10000',read_dataset('knapsack-data/23_10000'),9767)
+    dataset3 = ('100_1000',read_dataset('knapsack-data/100_1000'),1514)
     
+    #parameters = (penalty value, elitism rate, crossover rate, mutation rate)
+    dataset1_parameters = (2,0.03,1.0,0.3)
+    dataset2_parameters = (3,0.03,1.0,0.3)
+    dataset3_parameters = (1,0.03,1.0,0.3)
+
     rng = np.random.default_rng(123)
     seeds = rng.integers(low=0,high=2000,size=5)
     iterations_num = 5
@@ -142,13 +150,20 @@ if __name__=="__main__":
     x_values = [] #iterations range for each GA
     y_values = [] #average of 5 best individuals each iteration
 
-    for i in range(iterations_num):
-        print('i = ',i)
-        for seed in seeds:
-            print('seed = ',seed)
-            y,x= GA_solution(dataset1[1],seed)
+    dataset = dataset1
+    dataset_parameters = dataset1_parameters
+
+    for seed in seeds:
+        print('seed = ',seed)
+        for i in range(iterations_num):
+            print('i = ',i)
+            y,x= GA_solution(dataset[1],seed, 
+                            penalty_coeff=dataset_parameters[0], 
+                            elitism_rate=dataset_parameters[1], 
+                            crossover_rate=dataset_parameters[2], 
+                            mutation_rate=dataset_parameters[3])
             x_values.append(range(x))
             y_values.append(y)
     
-    draw_convergence_curves(x_values, y_values, dataset1[2], dataset1[0], seeds, iterations_num)
+    draw_convergence_curves(x_values, y_values, dataset[2], dataset[0], seeds, iterations_num)
     
