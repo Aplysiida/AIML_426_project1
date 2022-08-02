@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 """
 read dataset into tuple (num items, bag capacity, items dataframe)
@@ -23,6 +24,7 @@ def individual_knapsack_fitness(individual, penalty_coeff, dataset):
     value,weight = zip(*[ dataset[2].iloc[i] for i, value in enumerate(individual) if (value == 1) ])
     #penalty_coeff = 3 #3 is enough to impact fitness if violate constraint
     #keeping fitness >= 0 since negative will break probability calculations
+    #print('value = ',np.sum(value), ' weight = ',np.sum(weight),' max weight = ',dataset[1])
     return np.max((0, np.sum(value) - penalty_coeff*np.max((0, (np.sum(weight)-dataset[1])))))
 
 """
@@ -30,8 +32,22 @@ def individual_knapsack_fitness(individual, penalty_coeff, dataset):
 
 generate GA individual for population
 """
-def generate_individual(num_items, rng):
-    return rng.integers(low=0,high=2,size=num_items)
+def generate_individual(num_items, weights, max_weight, rng):
+    individual = [0] * num_items
+    total_weight = 0.0
+    unvisited = range(num_items)
+    for i in range(num_items):
+        index = rng.choice(unvisited, replace=False)
+        if(total_weight+weights[index] >= max_weight):   
+            return individual
+        else:   
+            individual[index] = 1
+            total_weight += weights[index]
+    """individual = [rng.integers(low=0,high=2) for item in range(num_items)]
+    while():
+        individual[rng.integers(low=0,high=num_items)] 
+    return individual
+    #return rng.integers(low=0,high=2,size=num_items)"""
 
 """
 one-point crossover operator
@@ -83,7 +99,7 @@ calculate optimal solution through GA
 def GA_solution(dataset, seed, pop_size = 100, max_iter = 200, max_convergence_iterations = 5, penalty_coeff = 1, elitism_rate = 0.1, crossover_rate = 1.0, mutation_rate = 0.9):
     rng = np.random.default_rng(seed)   #set up rng so can get consistent results based on seed
 
-    pop=[generate_individual(dataset[0], rng) for i in range(pop_size)]
+    pop=[generate_individual(dataset[0], dataset[2].iloc[:,0].tolist(), dataset[1], rng) for i in range(pop_size)]
     fitness_func = lambda x : individual_knapsack_fitness(x,penalty_coeff,dataset)
     num_iterations = 0   #keeps track of number of iterations done
     current_convergence_iterations = 0  #keep track of how many convergence iterations there have been
@@ -102,20 +118,20 @@ def GA_solution(dataset, seed, pop_size = 100, max_iter = 200, max_convergence_i
 
         prev_avg = current_avg
         avg_best.append(current_avg)
-        #best_individual = pop[0]    #get best individual from pop
+        best_individual = pop[0]    #get best individual from pop
 
         prob = prob_calc(pop, fitness_func,fitness) #calc probabilities for roulette wheel
         new_pop = gen_new_pop(pop, rng, prob, pop_size, elitism_rate, crossover_rate, mutation_rate)
         pop = new_pop
         num_iterations += 1
 
-    """value_sum = lambda inst : np.sum([dataset[2].iloc[i]['Value'] for i, value in enumerate(pop[0]) if (value == 1)])
-    print('--------')
+    value_sum = lambda inst : np.sum([dataset[2].iloc[i]['Value'] for i, value in enumerate(pop[0]) if (value == 1)])
+    """print('--------')
     for p in pop:
         print(p,' fitness = ',value_sum(p))
-    print('--------')
+    print('--------')"""
 
-    print('best_individual = ',best_individual,' fitness = ', value_sum(best_individual))   """
+    print('best_individual = ',best_individual,' fitness = ', value_sum(best_individual))   
     return avg_best,num_iterations
 
 """
@@ -124,31 +140,33 @@ Draw convergence curves for each seed and iteration
 def draw_convergence_curves(x_values, y_values, optimal_value, dataset_name, seeds, iterations_num):
     fig = plt.figure(constrained_layout=True)
     fig.suptitle(dataset_name)
-    subfigs = fig.subfigures(nrows=iterations_num,ncols=1)
+    subfigs = fig.subfigures(nrows=len(seeds),ncols=1)
 
     #for i in range(iterations_num):
     for i,seed in enumerate(seeds):
         subfig = subfigs[i]
-        subfig.suptitle('Iteration:'+str(i))
-        axis = subfig.subplots(nrows=1, ncols=len(seeds))
+        subfig.suptitle('Seed: '+str(seed))
+        axis = subfig.subplots(nrows=1, ncols=iterations_num)
         for j in range(iterations_num):
             axis[j].yaxis.grid(True)
             axis[j].axhline(optimal_value, color='green', linewidth=1.0)
             axis[j].plot(x_values[j], y_values[j],c='red')
-            axis[j].set_title('Seed: '+str(seed))
+            axis[j].set_title('Iteration:'+str(j))
 
     plt.show()
 
 
 if __name__=="__main__":
-    dataset1 = ('10_269', read_dataset('knapsack-data/10_269'), 295)
-    dataset2 = ('23_10000',read_dataset('knapsack-data/23_10000'),9767)
-    dataset3 = ('100_1000',read_dataset('knapsack-data/100_1000'),1514)
+    data_folder_path = sys.argv[1]
+
+    dataset1 = ('10_269', read_dataset(data_folder_path+'10_269'), 295)
+    dataset2 = ('23_10000',read_dataset(data_folder_path+'23_10000'),9767)
+    dataset3 = ('100_1000',read_dataset(data_folder_path+'100_995'),1514)
     
     #parameters = (penalty value, elitism rate, crossover rate, mutation rate)
     dataset1_parameters = (2,0.03,1.0,0.3)
     dataset2_parameters = (3,0.03,1.0,0.3)
-    dataset3_parameters = (1,0.03,1.0,0.3)
+    dataset3_parameters = (2.09,0.1,1.0,0.4)
 
     rng = np.random.default_rng(123)
     seeds = rng.integers(low=0,high=2000,size=2)
