@@ -80,22 +80,28 @@ def gen_new_pop(pop, rng, prob, pop_size, elitism_rate, crossover_rate, mutation
 calculate optimal solution through GA
 """
 #todo: experiment with pop size
-def GA_solution(dataset, seed, pop_size = 100, max_iter = 200, penalty_coeff = 1, elitism_rate = 0.1, crossover_rate = 1.0, mutation_rate = 0.9):
+def GA_solution(dataset, seed, pop_size = 100, max_iter = 200, max_convergence_iterations = 5, penalty_coeff = 1, elitism_rate = 0.1, crossover_rate = 1.0, mutation_rate = 0.9):
     rng = np.random.default_rng(seed)   #set up rng so can get consistent results based on seed
 
     pop=[generate_individual(dataset[0], rng) for i in range(pop_size)]
     fitness_func = lambda x : individual_knapsack_fitness(x,penalty_coeff,dataset)
     num_iterations = 0   #keeps track of number of iterations done
-    avg_best = []
+    current_convergence_iterations = 0  #keep track of how many convergence iterations there have been
+    avg_best = []   #store average of top 5 individual in each generation
     prev_avg = -10.0    #start at -10 so never converge at beginning
 
     for i in range(max_iter):   #repeat until stopping criteria is met
         fitness = fitness_pop_eval(pop, fitness_func)  #calc total fitness of pope
         #if(abs(fitness-prev_fitness) < 0.1): break  #check for convergence
         
-        avg = np.average([ fitness_func(individual) for individual in pop[:5]])
-        #if():   #check for convergence
-        avg_best.append(avg)
+        current_avg = np.average([ fitness_func(individual) for individual in pop[:5]])
+        if(abs(current_avg - prev_avg) < 0.01):   #check for convergence
+            current_convergence_iterations += 1
+            if(current_convergence_iterations > max_convergence_iterations): break
+        else: current_convergence_iterations = 0
+
+        prev_avg = current_avg
+        avg_best.append(current_avg)
         #best_individual = pop[0]    #get best individual from pop
 
         prob = prob_calc(pop, fitness_func,fitness) #calc probabilities for roulette wheel
@@ -120,11 +126,12 @@ def draw_convergence_curves(x_values, y_values, optimal_value, dataset_name, see
     fig.suptitle(dataset_name)
     subfigs = fig.subfigures(nrows=iterations_num,ncols=1)
 
-    for i in range(iterations_num):
+    #for i in range(iterations_num):
+    for i,seed in enumerate(seeds):
         subfig = subfigs[i]
         subfig.suptitle('Iteration:'+str(i))
         axis = subfig.subplots(nrows=1, ncols=len(seeds))
-        for j,seed in enumerate(seeds):
+        for j in range(iterations_num):
             axis[j].yaxis.grid(True)
             axis[j].axhline(optimal_value, color='green', linewidth=1.0)
             axis[j].plot(x_values[j], y_values[j],c='red')
@@ -144,14 +151,14 @@ if __name__=="__main__":
     dataset3_parameters = (1,0.03,1.0,0.3)
 
     rng = np.random.default_rng(123)
-    seeds = rng.integers(low=0,high=2000,size=5)
-    iterations_num = 5
+    seeds = rng.integers(low=0,high=2000,size=2)
+    iterations_num = 2
 
     x_values = [] #iterations range for each GA
     y_values = [] #average of 5 best individuals each iteration
 
-    dataset = dataset1
-    dataset_parameters = dataset1_parameters
+    dataset = dataset3
+    dataset_parameters = dataset3_parameters
 
     for seed in seeds:
         print('seed = ',seed)
