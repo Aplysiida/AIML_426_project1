@@ -91,7 +91,6 @@ def gen_new_pop(pop, rng, prob, pop_size, elitism_rate, crossover_rate, mutation
 """
 calculate optimal solution through GA
 """
-#todo: experiment with pop size
 def GA_solution(dataset, seed, pop_size = 100, max_iter = 200, max_convergence_iterations = 5, penalty_coeff = 1, elitism_rate = 0.1, crossover_rate = 1.0, mutation_rate = 0.9):
     rng = np.random.default_rng(seed)   #set up rng so can get consistent results based on seed
 
@@ -121,26 +120,24 @@ def GA_solution(dataset, seed, pop_size = 100, max_iter = 200, max_convergence_i
         pop = new_pop
         num_iterations += 1
 
-    return avg_best,num_iterations, best_individual
+    best_individual_fitness = fitness_func(best_individual)
+    return avg_best,num_iterations, best_individual_fitness
 
 """
 Draw convergence curves for each seed and iteration
 """
-def draw_convergence_curves(x_values, y_values, optimal_value, dataset_name, seeds, iterations_num):
+def draw_convergence_curves(x_values, y_values, optimal_value, dataset_name, seeds, mean, std):
     fig = plt.figure(constrained_layout=True)
-    fig.suptitle(dataset_name)
+    fig.suptitle(dataset_name+' Mean: '+str(mean)+' Standard Deviation: '+str(std))
     subfigs = fig.subfigures(nrows=len(seeds),ncols=1)
 
     #for i in range(iterations_num):
     for i,seed in enumerate(seeds):
-        subfig = subfigs[i]
-        subfig.suptitle('Seed: '+str(seed))
-        axis = subfig.subplots(nrows=1, ncols=iterations_num)
-        for j in range(iterations_num):
-            axis[j].yaxis.grid(True)
-            axis[j].axhline(optimal_value, color='green', linewidth=1.0)
-            axis[j].plot(x_values[j], y_values[j],c='red')
-            axis[j].set_title('Iteration:'+str(j))
+        subfigs[i].suptitle('Seed: '+str(seed))
+        axis = subfigs[i].subplots(nrows=1, ncols=1)
+        axis.yaxis.grid(True)
+        axis.axhline(optimal_value, color='green', linewidth=1.0)
+        axis.plot(x_values[i], y_values[i],c='red')
 
     plt.show()
 
@@ -148,38 +145,39 @@ def draw_convergence_curves(x_values, y_values, optimal_value, dataset_name, see
 if __name__=="__main__":
     data_folder_path = sys.argv[1]
 
-    dataset1 = ('10_269', read_dataset(data_folder_path+'10_269'), 295)
-    dataset2 = ('23_10000',read_dataset(data_folder_path+'23_10000'),9767)
-    dataset3 = ('100_1000',read_dataset(data_folder_path+'100_995'),1514)
+    datasets = [] #stores tuples as (dataset name, dataset, optimal value)
+    datasets.append(('10_269: ', read_dataset(data_folder_path+'10_269'), 295))
+    datasets.append(('23_10000: ',read_dataset(data_folder_path+'23_10000'),9767))
+    datasets.append(('100_1000: ',read_dataset(data_folder_path+'100_995'),1514))
     
-    #parameters = (penalty value, elitism rate, crossover rate, mutation rate)
-    dataset1_parameters = (2,0.03,1.0,0.3)
-    dataset2_parameters = (3,0.03,1.0,0.3)
-    dataset3_parameters = (2.09,0.1,1.0,0.4)
+    dataset_parameters = [] #stores tuples as (penalty value, elitism rate, crossover rate, mutation rate)
+    dataset_parameters.append((2,0.03,1.0,0.3))
+    dataset_parameters.append((3,0.03,1.0,0.3))
+    dataset_parameters.append((2.09,0.1,1.0,0.4))
 
     rng = np.random.default_rng(12)
     seeds = rng.integers(low=0,high=2000,size=5)
     iterations_num = 2
 
-    x_values = [] #iterations range for each GA
-    y_values = [] #average of 5 best individuals each iteration
-
-    dataset = dataset1
-    dataset_parameters = dataset1_parameters
-
-    for seed in seeds:
-        print('seed = ',seed)
-        GA_output = []  #GA best solution from each iteration
-        for i in range(iterations_num):
-            print('i = ',i)
-            y,x,best= GA_solution(dataset[1],seed, 
-                            penalty_coeff=dataset_parameters[0], 
-                            elitism_rate=dataset_parameters[1], 
-                            crossover_rate=dataset_parameters[2], 
-                            mutation_rate=dataset_parameters[3])
+    for i in range(len(datasets)):
+        print(datasets[i][0])
+        GA_output = []  #GA best solution from each seed
+        x_values = [] #iterations range for each GA
+        y_values = [] #average of 5 best individuals each iteration
+        for seed in seeds:
+            print('seed = ',seed)
+            print('parameters = ',dataset_parameters[i])
+            y,x,best= GA_solution(datasets[i][1],seed, 
+                            penalty_coeff=dataset_parameters[i][0], 
+                            elitism_rate=dataset_parameters[i][1], 
+                            crossover_rate=dataset_parameters[i][2], 
+                            mutation_rate=dataset_parameters[i][3])
+            print('y = ',y)
             GA_output.append(best)
             x_values.append(range(x))
             y_values.append(y)
-        
-    
-    draw_convergence_curves(x_values, y_values, dataset[2], dataset[0], seeds, iterations_num)
+        mean = np.mean(GA_output)
+        std = np.std(GA_output)
+        print('mean = ',mean)
+        print('standard deviation = ',std)
+        draw_convergence_curves(x_values, y_values, datasets[i][2], datasets[i][0], seeds, mean, std)
