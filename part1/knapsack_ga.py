@@ -43,11 +43,7 @@ def generate_individual(num_items, weights, max_weight, rng):
         else:   
             individual[index] = 1
             total_weight += weights[index]
-    """individual = [rng.integers(low=0,high=2) for item in range(num_items)]
-    while():
-        individual[rng.integers(low=0,high=num_items)] 
     return individual
-    #return rng.integers(low=0,high=2,size=num_items)"""
 
 """
 one-point crossover operator
@@ -125,13 +121,6 @@ def GA_solution(dataset, seed, pop_size = 100, max_iter = 200, max_convergence_i
         pop = new_pop
         num_iterations += 1
 
-    value_sum = lambda inst : np.sum([dataset[2].iloc[i]['Value'] for i, value in enumerate(pop[0]) if (value == 1)])
-    """print('--------')
-    for p in pop:
-        print(p,' fitness = ',value_sum(p))
-    print('--------')"""
-
-    print('best_individual = ',best_individual,' fitness = ', value_sum(best_individual))   
     return avg_best,num_iterations
 
 """
@@ -168,15 +157,15 @@ if __name__=="__main__":
     dataset2_parameters = (3,0.03,1.0,0.3)
     dataset3_parameters = (2.09,0.1,1.0,0.4)
 
-    rng = np.random.default_rng(123)
-    seeds = rng.integers(low=0,high=2000,size=2)
+    rng = np.random.default_rng(12)
+    seeds = rng.integers(low=0,high=2000,size=5)
     iterations_num = 2
 
     x_values = [] #iterations range for each GA
     y_values = [] #average of 5 best individuals each iteration
 
-    dataset = dataset3
-    dataset_parameters = dataset3_parameters
+    dataset = dataset1
+    dataset_parameters = dataset1_parameters
 
     for seed in seeds:
         print('seed = ',seed)
@@ -191,4 +180,3 @@ if __name__=="__main__":
             y_values.append(y)
     
     draw_convergence_curves(x_values, y_values, dataset[2], dataset[0], seeds, iterations_num)
-    
