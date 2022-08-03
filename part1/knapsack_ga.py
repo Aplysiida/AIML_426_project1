@@ -121,7 +121,7 @@ def GA_solution(dataset, seed, pop_size = 100, max_iter = 200, max_convergence_i
         pop = new_pop
         num_iterations += 1
 
-    return avg_best,num_iterations
+    return avg_best,num_iterations, best_individual
 
 """
 Draw convergence curves for each seed and iteration
@@ -169,14 +169,17 @@ if __name__=="__main__":
 
     for seed in seeds:
         print('seed = ',seed)
+        GA_output = []  #GA best solution from each iteration
         for i in range(iterations_num):
             print('i = ',i)
-            y,x= GA_solution(dataset[1],seed, 
+            y,x,best= GA_solution(dataset[1],seed, 
                             penalty_coeff=dataset_parameters[0], 
                             elitism_rate=dataset_parameters[1], 
                             crossover_rate=dataset_parameters[2], 
                             mutation_rate=dataset_parameters[3])
+            GA_output.append(best)
             x_values.append(range(x))
             y_values.append(y)
+        
     
     draw_convergence_curves(x_values, y_values, dataset[2], dataset[0], seeds, iterations_num)
