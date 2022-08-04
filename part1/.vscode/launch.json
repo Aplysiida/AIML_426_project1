@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "program": "knapsack_ga.py",
-            "args": ["C:/Users/victR/OneDrive/Documents/university/aiml426/project1/AIML_426_project1/part1/knapsack-data/"],
+            "args": ["C:/Users/vic/Documents/university/aiml426/AIML_426_project1/part1/knapsack-data/"],
             "console": "integratedTerminal",
             "justMyCode": true
         }

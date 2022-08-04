@@ -22,9 +22,7 @@ def individual_knapsack_fitness(individual, penalty_coeff, dataset):
     if(not individual.__contains__(1)): return 0    #to avoid empty knapsack situation
     #decode knapsack chromosome to values and weights
     value,weight = zip(*[ dataset[2].iloc[i] for i, value in enumerate(individual) if (value == 1) ])
-    #penalty_coeff = 3 #3 is enough to impact fitness if violate constraint
     #keeping fitness >= 0 since negative will break probability calculations
-    #print('value = ',np.sum(value), ' weight = ',np.sum(weight),' max weight = ',dataset[1])
     return np.max((0, np.sum(value) - penalty_coeff*np.max((0, (np.sum(weight)-dataset[1])))))
 
 """
@@ -54,11 +52,17 @@ def one_point_crossover(parent1, parent2, rng):
     child2 = np.concatenate((parent2[0:split_pos],parent1[split_pos:len(parent2)]))
     return (child1, child2)
 
+"""
+All points here are equal chance of being flipped
+"""
 def uniform_flip(instance, rng):
     pos = rng.integers(low=0,high=(len(instance)))
     instance[pos] = 0 if(instance[pos] == 1) else 1 #flip mutation
     return instance
 
+"""
+Flip the point into the instance with the largest value
+"""
 def truncate_flip(instance, fitness_func):
     best_instance, best_value = instance.copy(),0
     for i,bit in enumerate(instance):
@@ -101,8 +105,7 @@ def gen_new_pop(pop, rng, fitness_func, fitness, pop_size, elitism_rate, crossov
         parents = rng.choice(pop_size,size=2,p=prob)  #selection
         if (rng.random() <= crossover_rate):
             children = one_point_crossover(pop[parents[0]], pop[parents[1]], rng)#crossover
-            #mutation
-            children = [mutation(child, rng, fitness_func) if(rng.random() <= mutation_rate) else child for child in children]
+            children = [mutation(child, rng, fitness_func) if(rng.random() <= mutation_rate) else child for child in children]  #mutation
             new_pop += children
     return new_pop[:pop_size]#avoid new population being bigger than correct pop size
 
@@ -121,26 +124,23 @@ def GA_solution(dataset, seed, pop_size = 50, max_iter = 100, max_convergence_it
 
     for i in range(max_iter):   #repeat until stopping criteria is met
         fitness = fitness_pop_eval(pop, fitness_func)  #calc total fitness of pope
-        #if(abs(fitness-prev_fitness) < 0.1): break  #check for convergence
         
         current_avg = np.average([ fitness_func(individual) for individual in pop[:5]])
-        if(abs(current_avg - prev_avg) < 0.01):   #check for convergence
+        if(abs(current_avg - prev_avg) < 0.001):   #check for convergence
             current_convergence_iterations += 1
             if(current_convergence_iterations > max_convergence_iterations): break
-        else: current_convergence_iterations = 0
+        else: current_convergence_iterations = 0    #no more convergence
 
         prev_avg = current_avg
         avg_best.append(current_avg)
         best_individual = pop[0]    #get best individual from pop
 
-        #prob = prob_calc(pop, fitness_func,fitness) #calc probabilities for roulette wheel
         new_pop = gen_new_pop(pop, rng, fitness_func, fitness, pop_size, elitism_rate, crossover_rate, mutation_rate)
         pop = new_pop
         num_iterations += 1
 
-    value,weight = zip(*[ dataset[2].iloc[i] for i, value in enumerate(best_individual) if (value == 1) ])
     best_individual_fitness = fitness_func(best_individual)
-    print('best = ',best_individual_fitness,' value = ',np.sum(value),' weight = ',np.sum(weight),' max weight = ',dataset[1],' penalty = ',penalty_coeff)
+    print('best individual = ',best_individual,' fitness = ',best_individual_fitness)
     return avg_best,num_iterations, best_individual_fitness
 
 """
@@ -168,7 +168,7 @@ if __name__=="__main__":
     datasets = [] #stores tuples as (dataset name, dataset, optimal value)
     datasets.append(('10_269: ', read_dataset(data_folder_path+'10_269'), 295))
     datasets.append(('23_10000: ',read_dataset(data_folder_path+'23_10000'),9767))
-    datasets.append(('100_1000: ',read_dataset(data_folder_path+'100_995'),1514))
+    datasets.append(('100_995: ',read_dataset(data_folder_path+'100_995'),1514))
     
     dataset_parameters = [] #stores tuples as (pop size, max iterations, penalty value, elitism rate, crossover rate, mutation rate)
     dataset_parameters.append((50,100,2,0.03,1.0,0.3))
@@ -177,9 +177,6 @@ if __name__=="__main__":
 
     rng = np.random.default_rng(123)
     seeds = rng.integers(low=0,high=2000,size=5)
-    iterations_num = 2
-    datasets = datasets[2:3]
-    dataset_parameters = dataset_parameters[2:3]
 
     for i in range(len(datasets)):
         print(datasets[i][0])
@@ -188,7 +185,6 @@ if __name__=="__main__":
         y_values = [] #average of 5 best individuals each iteration
         for seed in seeds:
             print('seed = ',seed)
-            print('parameters = ',dataset_parameters[i])
             y,x,best= GA_solution(datasets[i][1],seed, 
                             pop_size = dataset_parameters[i][0],
                             max_iter = dataset_parameters[i][1],
