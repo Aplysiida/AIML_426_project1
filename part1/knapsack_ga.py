@@ -54,13 +54,29 @@ def one_point_crossover(parent1, parent2, rng):
     child2 = np.concatenate((parent2[0:split_pos],parent1[split_pos:len(parent2)]))
     return (child1, child2)
 
+def uniform_flip(instance, rng):
+    pos = rng.integers(low=0,high=(len(instance)))
+    instance[pos] = 0 if(instance[pos] == 1) else 1 #flip mutation
+    return instance
+
+def truncate_flip(instance, fitness_func):
+    best_instance, best_value = instance.copy(),0
+    for i,bit in enumerate(instance):
+        flip_bit = 0 if(bit == 1) else 1
+        new_instance = instance.copy()
+        new_instance[i] = flip_bit
+        fitness = fitness_func(new_instance)
+        if (fitness > best_value):
+            best_instance = new_instance
+            best_value = fitness
+    return best_instance
+
 """
 flip mutation operator
 """
-def mutation(instance, rng):
-    mutation_pos = rng.integers(low=0,high=(len(instance)))
-    instance[mutation_pos] = 0 if(instance[mutation_pos] == 1) else 1 #flip mutation
-    return instance
+def mutation(instance, rng, fitness_func):
+    #return uniform_flip(instance, rng)
+    return truncate_flip(instance,fitness_func)
 
 """
 calculate probabilities for roulette wheel selection
@@ -76,7 +92,9 @@ def fitness_pop_eval(population, fit_func):
     population.sort(key=fit_func,reverse=True)
     return np.sum(list(map(fit_func, population)))
 
-def gen_new_pop(pop, rng, prob, pop_size, elitism_rate, crossover_rate, mutation_rate):
+def gen_new_pop(pop, rng, fitness_func, fitness, pop_size, elitism_rate, crossover_rate, mutation_rate):
+    prob = prob_calc(pop, fitness_func,fitness) #calc probabilities for roulette wheel
+
     new_pop=[]
     new_pop += pop[0:int(elitism_rate * pop_size)] #elitism
     while(len(new_pop) < pop_size):
@@ -84,14 +102,14 @@ def gen_new_pop(pop, rng, prob, pop_size, elitism_rate, crossover_rate, mutation
         if (rng.random() <= crossover_rate):
             children = one_point_crossover(pop[parents[0]], pop[parents[1]], rng)#crossover
             #mutation
-            children = [mutation(child, rng) if(rng.random() <= mutation_rate) else child for child in children]
+            children = [mutation(child, rng, fitness_func) if(rng.random() <= mutation_rate) else child for child in children]
             new_pop += children
     return new_pop[:pop_size]#avoid new population being bigger than correct pop size
 
 """
 calculate optimal solution through GA
 """
-def GA_solution(dataset, seed, pop_size = 100, max_iter = 200, max_convergence_iterations = 5, penalty_coeff = 1, elitism_rate = 0.1, crossover_rate = 1.0, mutation_rate = 0.9):
+def GA_solution(dataset, seed, pop_size = 50, max_iter = 100, max_convergence_iterations = 5, penalty_coeff = 1, elitism_rate = 0.1, crossover_rate = 1.0, mutation_rate = 0.9):
     rng = np.random.default_rng(seed)   #set up rng so can get consistent results based on seed
 
     pop=[generate_individual(dataset[0], dataset[2].iloc[:,0].tolist(), dataset[1], rng) for i in range(pop_size)]
@@ -115,12 +133,14 @@ def GA_solution(dataset, seed, pop_size = 100, max_iter = 200, max_convergence_i
         avg_best.append(current_avg)
         best_individual = pop[0]    #get best individual from pop
 
-        prob = prob_calc(pop, fitness_func,fitness) #calc probabilities for roulette wheel
-        new_pop = gen_new_pop(pop, rng, prob, pop_size, elitism_rate, crossover_rate, mutation_rate)
+        #prob = prob_calc(pop, fitness_func,fitness) #calc probabilities for roulette wheel
+        new_pop = gen_new_pop(pop, rng, fitness_func, fitness, pop_size, elitism_rate, crossover_rate, mutation_rate)
         pop = new_pop
         num_iterations += 1
 
+    value,weight = zip(*[ dataset[2].iloc[i] for i, value in enumerate(best_individual) if (value == 1) ])
     best_individual_fitness = fitness_func(best_individual)
+    print('best = ',best_individual_fitness,' value = ',np.sum(value),' weight = ',np.sum(weight),' max weight = ',dataset[1],' penalty = ',penalty_coeff)
     return avg_best,num_iterations, best_individual_fitness
 
 """
@@ -150,14 +170,16 @@ if __name__=="__main__":
     datasets.append(('23_10000: ',read_dataset(data_folder_path+'23_10000'),9767))
     datasets.append(('100_1000: ',read_dataset(data_folder_path+'100_995'),1514))
     
-    dataset_parameters = [] #stores tuples as (penalty value, elitism rate, crossover rate, mutation rate)
-    dataset_parameters.append((2,0.03,1.0,0.3))
-    dataset_parameters.append((3,0.03,1.0,0.3))
-    dataset_parameters.append((2.09,0.1,1.0,0.4))
+    dataset_parameters = [] #stores tuples as (pop size, max iterations, penalty value, elitism rate, crossover rate, mutation rate)
+    dataset_parameters.append((50,100,2,0.03,1.0,0.3))
+    dataset_parameters.append((75,100,3,0.03,1.0,0.3))
+    dataset_parameters.append((100,100,25,0.1,1.0,0.3))
 
-    rng = np.random.default_rng(12)
+    rng = np.random.default_rng(123)
     seeds = rng.integers(low=0,high=2000,size=5)
     iterations_num = 2
+    datasets = datasets[2:3]
+    dataset_parameters = dataset_parameters[2:3]
 
     for i in range(len(datasets)):
         print(datasets[i][0])
@@ -168,11 +190,12 @@ if __name__=="__main__":
             print('seed = ',seed)
             print('parameters = ',dataset_parameters[i])
             y,x,best= GA_solution(datasets[i][1],seed, 
-                            penalty_coeff=dataset_parameters[i][0], 
-                            elitism_rate=dataset_parameters[i][1], 
-                            crossover_rate=dataset_parameters[i][2], 
-                            mutation_rate=dataset_parameters[i][3])
-            print('y = ',y)
+                            pop_size = dataset_parameters[i][0],
+                            max_iter = dataset_parameters[i][1],
+                            penalty_coeff=dataset_parameters[i][2], 
+                            elitism_rate=dataset_parameters[i][3], 
+                            crossover_rate=dataset_parameters[i][4], 
+                            mutation_rate=dataset_parameters[i][5])
             GA_output.append(best)
             x_values.append(range(x))
             y_values.append(y)

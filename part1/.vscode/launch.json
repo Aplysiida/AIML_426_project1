@@ -8,8 +8,8 @@
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",
-            "program": "${file}",
-            "args": ["C:/Users/vic/Documents/university/aiml426/AIML_426_project1/part1/knapsack-data/"],
+            "program": "knapsack_ga.py",
+            "args": ["C:/Users/victR/OneDrive/Documents/university/aiml426/project1/AIML_426_project1/part1/knapsack-data/"],
             "console": "integratedTerminal",
             "justMyCode": true
         }
