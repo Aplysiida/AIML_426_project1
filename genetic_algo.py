@@ -39,7 +39,6 @@ class GA:
             pop = new_pop
 
             num_iterations += 1
-            print('best_individual = ',best_individual)
 
         best_individual = pop[0]
         best_individual_fitness = self.fitness_func(best_individual)
@@ -128,19 +127,6 @@ class GA:
                 else:
                     individual[index] = 1
                 return individual
-
-            """
-            total_weight = 0.0
-            unvisited = range(individual_length)
-            for i in range(individual_length):
-                index = rng.choice(unvisited, replace=False)
-                if(total_weight+weights[index] >= max_weight):   
-                    return individual
-            else:   
-                individual[index] = 1
-                total_weight += weights[index]
-            return individual
-            """
 
     """
     Generate initial population for GA

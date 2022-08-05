@@ -86,42 +86,10 @@ For the third dataset, a much higher elitism rate was used to encourage more fit
 	\caption{Convergence curves for dataset 100\_995. Original png image provided as well}
 \end{figure}
 \clearpage
-%show best instance for the 5 seeds and datasets here
-\begin{center}
-\begin{tabular}{|c|c|}
-	\hline
-	Seed: & Best Individual Fitness: \\
-	\hline
-	\multicolumn{2}{|c|}{10\_269} \\
-	\hline
-	30 & 295	\\
-	1364 & 295 \\
-	1185 & 295 \\
-	107 & 295 \\
-	1181 & 295 \\
-	\hline
-	\multicolumn{2}{|c|}{23\_10000} \\
-	\hline
-	30	& 9767 \\
-	1364 & 9767 \\
-	1185 & 9767 \\
-	107 & 9763 \\
-	1181 & 9767 \\
-	\hline
-	\multicolumn{2}{|c|}{100\_995} \\
-	\hline
-	30	& 1481 \\
-	1364 & 1479 \\
-	1185 & 1324 \\
-	107 & 1501 \\
-	1181 & 1481 \\
-	\hline
-\end{tabular}
-\end{center}
 \subsubsection*{Discussion}
-For 10\_269, this dataset converged to the optimal solution in < 20 generations for all seeds. That means the mean fitness is the same value as the optimal fitness with no deviation. The small range of items to pick from means that exploring all solutions is possible to achieve with GA. This showcases that with the population structure of GA, exploring a large range of solutions can be done within a few generations. \par
-\noindent For 23\_10000 more generations were needed to reach the optimal solution. Four of the seeds achieved the optimal solution, but seed 107 was slightly under the optimal fitness. Creating a mean that is slightly less than the optimal fitness with small deviation. There is a logarithmic relation between the average best fitness of the generation with the number of generations showcasing that this dataset took a while to reach convergence despite being close to the optimal fitness. This could be circumvented by decreasing the mutation rate to prevent minor fitness changes in each generation that stopped convergence. \par
-\noindent For 100\_995 none of the seeds reached the optimal solution of 1514 though four of the five seeds were close to the optimal solution. With the mean fitness being noticeably lower than the optimal fitness and with a large standard deviation, this showcases that the seed value has a bigger effect on the final solution compared to the other datasets. Since the weight constraint for this dataset was very small and there are a large range of items to select from, most of all the possible instances violate the constraint. Trying to find the few instances that satisfy the constraint while still trying to achieve a high value sum required finetuning of the parameters until a decent result was produced. Since all the seeds converged before reaching the maximum number of iterations, this showcases a higher rate of mutation was needed, but increasing the mutation rate also increases the likelihood of violating the constraint. The output could be improved with a higher population size, but more computation time would be needed. Several instances of the GA could be run with different seeds with the final output being the best output out of all the individual GA’s best output since different seed values produce variety while also satisfying the constraint. \par
+For 10\_269, this dataset converged to the optimal solution in <= 50 generations for all seeds. That means the mean fitness is the same value as the optimal fitness with no deviation. The small range of items to pick from means that exploring all solutions is possible to achieve with GA. This showcases that with the population structure of GA, exploring a large range of solutions can be done within a reasonable number of generations. \par
+\noindent For 23\_10000 less generations were needed to reach the optimal solution with all five seeds reaching the optimal value with no deviation. Like in 10\_269 there is a logarithmic relation between the average best fitness of the generation with the number of generations showcasing that this dataset took a while to reach convergence despite being close to the optimal fitness. This could be circumvented by decreasing the mutation rate to prevent minor fitness changes in each generation that stopped convergence. \par
+\noindent For 100\_995 none of the seeds reached the optimal solution of 1514 though three of the five seeds were close to the optimal solution. With the mean fitness being noticeably lower than the optimal fitness and with a large standard deviation, this showcases that the seed value has a bigger effect on the final solution compared to the other datasets. Since the weight constraint for this dataset was very small and there are a large range of items to select from, most of all the possible instances violate the constraint. Trying to find the few instances that satisfy the constraint while still trying to achieve a high value sum required finetuning of the parameters until a decent result was produced. Since all the seeds converged before reaching the maximum number of iterations, this showcases a higher rate of mutation was needed, but increasing the mutation rate also increases the likelihood of violating the constraint. The output could be improved with a higher population size, but more computation time would be needed. Several instances of the GA could be run with different seeds with the final output being the best output out of all the individual GA’s best output since different seed values produce variety while also satisfying the constraint. \par
 \subsubsection*{Conclusion}
 GA is a useful technique for finding optimal or near optimal solutions with it succeeding to finding optimal solutions for small datasets within a reasonable timeframe. The parameters used for the datasets could be worked on more to increase accuracy and performance of the GA to achieve a balance of searching through a large range of solutions without getting stuck in a local optima while still approaching the global optima over time. \par
 \noindent GA does struggle with constraints, especially very strict constraints which most solutions violate. Since GAs can easily generate solutions that violate the constraint through reproduction. While implementing the penalty coefficient into the fitness evaluation can help define the constraint into the population, it needs to be balanced to encourage variety and sometimes still struggles to get solutions that are close to the optimal value while not violating the constraint. \par
