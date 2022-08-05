@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
+import genetic_algo
+
 """
 read dataset into tuple (num items, bag capacity, items dataframe)
 """
@@ -18,23 +20,28 @@ def read_dataset(filepath):
 
 evaluate fitness of individual in knapsack problem
 """
-def individual_knapsack_fitness(individual, penalty_coeff, dataset):
+def individual_knapsack_fitness(individual, penalty_coeff, dataset, max_weight):
     if(not individual.__contains__(1)): return 0    #to avoid empty knapsack situation
     #decode knapsack chromosome to values and weights
-    value,weight = zip(*[ dataset[2].iloc[i] for i, value in enumerate(individual) if (value == 1) ])
+    value,weight = zip(*[ dataset.iloc[i] for i, value in enumerate(individual) if (value == 1) ])
     #keeping fitness >= 0 since negative will break probability calculations
-    return np.max((0, np.sum(value) - penalty_coeff*np.max((0, (np.sum(weight)-dataset[1])))))
+    return np.max((0, np.sum(value) - penalty_coeff*np.max((0, (np.sum(weight)-max_weight)))))
+
+
+def knapsack_constraint_check(individual, dataset, max_weight):
+    _,weight =zip(*[ dataset.iloc[i] for i, value in enumerate(individual) if (value == 1) ])
+    return np.sum(weight) < max_weight
 
 """
 ----------GA implementation----------
 
-generate GA individual for population
+generate GA individual for population, specific to knapsack ga since uses weight constraint
 """
-def generate_individual(num_items, weights, max_weight, rng):
-    individual = [0] * num_items
+def generate_individual(individual_length, weights, max_weight, rng):
+    individual = [0] * individual_length
     total_weight = 0.0
-    unvisited = range(num_items)
-    for i in range(num_items):
+    unvisited = range(individual_length)
+    for i in range(individual_length):
         index = rng.choice(unvisited, replace=False)
         if(total_weight+weights[index] >= max_weight):   
             return individual
@@ -178,6 +185,20 @@ if __name__=="__main__":
     rng = np.random.default_rng(123)
     seeds = rng.integers(low=0,high=2000,size=5)
 
+    penalty_coeff = dataset_parameters[0][2]    #only is considered in fitness evaluation so keep it next to fitness
+    dataset = datasets[0][1][2]
+    max_weight = datasets[0][1][1]
+    item_length = datasets[0][1][0]
+    fitness_func = lambda x : individual_knapsack_fitness(x,penalty_coeff,dataset,max_weight)
+    constraint = lambda x : knapsack_constraint_check(x,dataset,max_weight)
+    ga = genetic_algo.GA(rng, dataset, item_length, fitness_func, constraint)
+    y,x,best = ga.GA_solution(pop_size = dataset_parameters[0][0],
+                   max_iter = dataset_parameters[0][1],
+                   elitism_rate=dataset_parameters[0][3],
+                   crossover_rate=dataset_parameters[0][4],
+                   mutation_rate=dataset_parameters[0][5])
+    print('individual best = ',best)
+    """
     for i in range(len(datasets)):
         print(datasets[i][0])
         GA_output = []  #GA best solution from each seed
@@ -200,3 +221,4 @@ if __name__=="__main__":
         print('mean = ',mean)
         print('standard deviation = ',std)
         draw_convergence_curves(x_values, y_values, datasets[i][2], datasets[i][0], seeds, mean, std)
+        """
