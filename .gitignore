@@ -1,6 +1,5 @@
 #ignore datasets
-part1/knapsack-data/
-part2/data/
+data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

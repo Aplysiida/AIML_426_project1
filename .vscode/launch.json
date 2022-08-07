@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "program": "knapsack_ga.py",
-            "args": ["knapsack-data/"],
+            "args": ["data/knapsack-data/"],
             "console": "integratedTerminal",
             "justMyCode": true
         }
