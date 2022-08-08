@@ -5,11 +5,25 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File with Knapsack",
+            "name": "Python: Feature Selection",
+            "type": "python",
+            "request": "launch",
+            "program": "feature_ga.py",
+            "args": [
+                "data/wbcd/",
+                "data/sonar/"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Knapsack",
             "type": "python",
             "request": "launch",
             "program": "knapsack_ga.py",
-            "args": ["data/knapsack-data/"],
+            "args": [
+                "data/knapsack-data/"
+            ],
             "console": "integratedTerminal",
             "justMyCode": true
         }

@@ -16,8 +16,6 @@ def read_dataset(filepath):
     return dataset
 
 """
-----------GA for knapsack problem specifically----------
-
 evaluate fitness of individual in knapsack problem
 """
 def individual_knapsack_fitness(individual, penalty_coeff, dataset, max_weight):
@@ -27,7 +25,9 @@ def individual_knapsack_fitness(individual, penalty_coeff, dataset, max_weight):
     #keeping fitness >= 0 since negative will break probability calculations
     return np.max((0, np.sum(value) - penalty_coeff*np.max((0, (np.sum(weight)-max_weight)))))
 
-
+"""
+maximum weight constraint for the knapsack problem
+"""
 def knapsack_constraint_check(individual, dataset, max_weight):
     _,weight =zip(*[ dataset.iloc[i] for i, value in enumerate(individual) if (value == 1) ])
     return np.sum(weight) < max_weight
