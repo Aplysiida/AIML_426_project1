@@ -20,8 +20,8 @@ class GA:
         prev_avg = -10.0    #start at -10 so never converge at beginning
 
         for i in range(max_iter):   #repeat until stopping criteria is met
-            fitness = self._fitness_pop_eval(pop, self.fitness_func)  #calc total fitness of pop
-            
+            fitness = self._fitness_pop_eval(pop, self.fitness_func)  #calc total fitness of pop           
+
             current_avg = np.average([self.fitness_func(individual) for individual in pop[:5]])
             if(abs(current_avg - prev_avg) < 0.001):   #check for convergence
                 current_convergence_iterations += 1
