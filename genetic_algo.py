@@ -22,6 +22,12 @@ class GA:
         for i in range(max_iter):   #repeat until stopping criteria is met
             fitness = self._fitness_pop_eval(pop, self.fitness_func)  #calc total fitness of pop           
 
+            """
+            for p in pop:
+                print('individual = ',p,' fitness = ',self.fitness_func(p))
+            print('----------')
+            """
+
             current_avg = np.average([self.fitness_func(individual) for individual in pop[:5]])
             if(abs(current_avg - prev_avg) < 0.001):   #check for convergence
                 current_convergence_iterations += 1
@@ -42,6 +48,7 @@ class GA:
 
         best_individual = pop[0]
         best_individual_fitness = self.fitness_func(best_individual)
+        #print('individual = ',best_individual,' fitness = ',best_individual_fitness)
         return avg_best,num_iterations, best_individual_fitness
 
     #Private functions
@@ -104,8 +111,28 @@ class GA:
     evaluate fitness of entire population and order population by fitness
     """
     def _fitness_pop_eval(self, population, fit_func):
+        for p in population:
+            print('individual = ',p,' fitness = ',fit_func(p))
+        #print(population)
+        fitness = list(map(fit_func, population))
+        #sort pop in same order as sorted fitness
+        for f in fitness:
+            print(f)
+        #todo: check doc if way to sort two lists at once using sort()
+        fitness.sort(reverse=True)
+        #population.sort(key = lambda i,x : fitness[i], reverse=True)
+        #pop = list(map(lambda i,x : fitness[i], enumerate(population)))
+        print('--------')
+        for f in fitness:
+                print(f)
+        print('new pop:-----')
+        for p in population:
+            print('individual = ',p,' fitness = ',fit_func(p))
+        return np.sum(fitness), fitness
+        """
         population.sort(key=fit_func,reverse=True)
         return np.sum(list(map(fit_func, population)))
+        """
 
     #Generating individuals and population
     """

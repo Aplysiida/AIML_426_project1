@@ -42,18 +42,17 @@ Wrapper fitness function
 """
 #to fix, need same rng as rest of genetic_algo
 def individual_wrapper_fitness(individual, data, labels, seed):
-    rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(seed)   #split at same point always to keep consistent results
     to_drop = [i for i,value in enumerate(individual) if (value == 0)]
     subset_data = data.drop(data.columns[to_drop],axis=1) #transform dataset to have only selected features
     #split dataset into training, testing
     data_train, data_test, label_train, label_test = train_test_split(subset_data, labels, test_size = 0.2, random_state = rng.integers(low=0,high=200))
     #train classifier
-    #predicted = MLPClassifier(max_iter = 1000, random_state=rng.integers(low=0,high=200)).fit(data_train, label_train).predict(data_test)
+    predicted = MLPClassifier(max_iter = 1000, random_state=rng.integers(low=0,high=200)).fit(data_train, label_train).predict(data_test)
     #predicted = DecisionTreeClassifier(random_state=rng.integers(low=0,high=200)).fit(data_train, label_train).predict(data_test)
-    predicted = KNeighborsClassifier(n_neighbors=5).fit(data_train, label_train).predict(data_test)
+    #predicted = KNeighborsClassifier(n_neighbors=5).fit(data_train, label_train).predict(data_test)
     #predicted = GaussianNB().fit(data_train, label_train).predict(data_test)
     accuracy = accuracy_score(label_test, predicted)    #calc accuracy
-    #print(',',accuracy)
     return accuracy
 
 """
@@ -101,7 +100,7 @@ if __name__=="__main__":
     """
     
     dataset_parameters = [] #stores tuples as (pop size, max iterations, elitism rate, crossover rate, mutation rate)
-    dataset_parameters.append((20,30,0.03,1.0,0.3))
+    dataset_parameters.append((5,30,0.03,1.0,0.3))
     dataset_parameters.append((50,100,0.03,1.0,0.3))
 
     dataset = datasets[0]
