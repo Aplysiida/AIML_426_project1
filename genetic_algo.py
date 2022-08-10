@@ -23,7 +23,7 @@ class GA:
             pop_fitness, fitness, pop = self._fitness_pop_eval(pop, self.fitness_func)  #calc total fitness of pop           
 
             current_avg = np.average(fitness[:5])
-            if(abs(current_avg - prev_avg) < 0.0001):   #check for convergence
+            if(abs(current_avg - prev_avg) < 0.001):   #check for convergence
                 current_convergence_iterations += 1
                 if(current_convergence_iterations > max_convergence_iterations): break
             else: current_convergence_iterations = 0    #no longer at convergence
@@ -105,9 +105,6 @@ class GA:
     """
     def _fitness_pop_eval(self, population, fit_func):
         fitness = list(map(fit_func, population))   #calculate fitness for eahc individual
-        print(population)
-        print('-------')
-        print(fitness)
         fitness, population = zip(*sorted(zip(fitness,population), reverse=True)) #sort fitness and population by best fitness
         return np.sum(fitness), fitness, list(population)
         

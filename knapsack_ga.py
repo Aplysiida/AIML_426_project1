@@ -68,7 +68,6 @@ if __name__=="__main__":
     seeds = seed_rng.integers(low=0,high=2000,size=5)
 
     for i in range(len(datasets)):
-        print('dataset = ',datasets[i][0])
         penalty_coeff = dataset_parameters[i][2]
         dataset = datasets[i][1][2]
         max_weight = datasets[i][1][1]

@@ -56,6 +56,12 @@ def individual_wrapper_fitness(individual, data, labels, seed):
     return accuracy
 
 """
+Filter Fitness function
+"""
+def individual_filter_function():
+    print('hi')
+
+"""
 Draw convergence curves for each seed and iteration
 """
 def draw_convergence_curves(x_values, y_values, dataset_name, seeds, mean, std,optimal_value=None):
@@ -63,10 +69,9 @@ def draw_convergence_curves(x_values, y_values, dataset_name, seeds, mean, std,o
     fig.suptitle(dataset_name+' Mean: '+str(mean)+' Standard Deviation: '+str(std))
     subfigs = fig.subfigures(nrows=len(seeds),ncols=1)
 
-    #for i in range(iterations_num):
     for i,seed in enumerate(seeds):
-        subfigs.suptitle('Seed: '+str(seed))
-        axis = subfigs.subplots(nrows=1, ncols=1)
+        subfigs[i].suptitle('Seed: '+str(seed))
+        axis = subfigs[i].subplots(nrows=1, ncols=1)
         axis.yaxis.grid(True)
         if(optimal_value != None):
             axis.axhline(optimal_value, color='green', linewidth=1.0)
@@ -81,55 +86,45 @@ if __name__=="__main__":
     datasets = []
     datasets.append(read_dataset(data_folder_paths[0]))
     datasets.append(read_dataset(data_folder_paths[1]))
-
-    #test wrapper fitness
-    """
-    dataset = datasets[1]
-    rng = np.random.default_rng(2)
-    time_list = []
-    accuracy_list = []
-    for i in range(20):
-        individual = rng.integers(low=0,high=2,size=30)
-        start = time.time()
-        a = wrapper_fitness(individual,dataset[0],dataset[1],rng)
-        end = time.time()
-        time_list.append((end-start))
-        accuracy_list.append(a)
-        print('individual = ',individual,' accuracy = ',a,' time = ',(end-start))
-    print('average time = ',np.average(time_list), ' average accuracy = ',np.average(accuracy_list))
-    """
     
     dataset_parameters = [] #stores tuples as (pop size, max iterations, elitism rate, crossover rate, mutation rate)
-    dataset_parameters.append((5,30,0.03,1.0,0.3))
-    dataset_parameters.append((50,100,0.03,1.0,0.3))
+    dataset_parameters.append((10,20,0.03,1.0,0.3))
+    dataset_parameters.append((40,100,0.03,1.0,0.3))
 
-    dataset = datasets[1]
-    dataset_parameter = dataset_parameters[1]
+    seed_rng = np.random.default_rng(123)
+    seeds = seed_rng.integers(low=0,high=200,size=5)    
 
-    #for seed 1
-    rng = np.random.default_rng(1)
-    fitness_func = lambda x : individual_wrapper_fitness(x,dataset[0][0],dataset[0][1],1)
+    dataset = datasets[0]
+    dataset_parameter = dataset_parameters[0]
 
-    GA_output = []  #GA best solution from each seed
-    x_values = [] #iterations range for each GA 
-    y_values = [] #average of 5 best individuals each iteration
+    for i,dataset in enumerate(datasets):
+        dataset_parameter = dataset_parameters[i]
+        print('at dataset ',dataset_names[i],':')
+
+        GA_output = []  #GA best solution from each seed
+        x_values = [] #iterations range for each GA 
+        y_values = [] #average of 5 best individuals each iteration
+
+        for seed in seeds:
+            print('seed = ',seed)
+            rng = np.random.default_rng(seed)
+            fitness_func = lambda x : individual_wrapper_fitness(x,dataset[0][0],dataset[0][1],1)
     
-    #to figure out, can i just set rng to same point in fitness
-    item_length = dataset[1]
-    WrapperGA = genetic_algo.GA(rng, dataset, item_length, fitness_func)
-    y,x,best = WrapperGA.GA_solution(
-        pop_size = dataset_parameter[0],
-        max_iter = dataset_parameter[1],
-        elitism_rate= dataset_parameter[2],
-        crossover_rate= dataset_parameter[3],
-        mutation_rate= dataset_parameter[4]
-    )
-    GA_output.append(best)
-    x_values.append(range(x))
-    y_values.append(y)
+            item_length = dataset[1]
+            WrapperGA = genetic_algo.GA(rng, dataset, item_length, fitness_func)
+            y,x,best = WrapperGA.GA_solution(
+                pop_size = dataset_parameter[0],
+                max_iter = dataset_parameter[1],
+                elitism_rate= dataset_parameter[2],
+                crossover_rate= dataset_parameter[3],
+                mutation_rate= dataset_parameter[4]
+            )
+            GA_output.append(best)
+            x_values.append(range(x))
+            y_values.append(y)
 
-    mean = np.mean(GA_output)
-    std = np.std(GA_output)
-    print('mean = ',mean)
-    print('standard deviation = ',std)
-    draw_convergence_curves(x_values, y_values, dataset_names[0], [1], mean, std)
+        mean = np.mean(GA_output)
+        std = np.std(GA_output)
+        print('mean = ',mean)
+        print('standard deviation = ',std)
+        draw_convergence_curves(x_values, y_values, dataset_names[i], seeds, mean, std)
