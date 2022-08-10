@@ -23,7 +23,7 @@ class GA:
             pop_fitness, fitness, pop = self._fitness_pop_eval(pop, self.fitness_func)  #calc total fitness of pop           
 
             current_avg = np.average(fitness[:5])
-            if(abs(current_avg - prev_avg) < 0.1):   #check for convergence
+            if(abs(current_avg - prev_avg) < 0.0001):   #check for convergence
                 current_convergence_iterations += 1
                 if(current_convergence_iterations > max_convergence_iterations): break
             else: current_convergence_iterations = 0    #no longer at convergence
@@ -40,7 +40,7 @@ class GA:
             num_iterations += 1
 
         best_individual = pop[0]
-        best_individual_fitness = self.fitness_func(best_individual)
+        best_individual_fitness = self.fitness_func(best_individual)   
         return avg_best,num_iterations, best_individual_fitness
 
     #Private functions
@@ -105,6 +105,9 @@ class GA:
     """
     def _fitness_pop_eval(self, population, fit_func):
         fitness = list(map(fit_func, population))   #calculate fitness for eahc individual
+        print(population)
+        print('-------')
+        print(fitness)
         fitness, population = zip(*sorted(zip(fitness,population), reverse=True)) #sort fitness and population by best fitness
         return np.sum(fitness), fitness, list(population)
         
@@ -115,7 +118,8 @@ class GA:
     """
     def _generate_individual(self, individual_length, rng, constraint=-1):
         if(constraint == -1): #no constraint lambda defined for this GA, juts randomly generate individuals
-            return rng.integers(low=0,high=2,size=individual_length)
+            #convert nd array back to list to keep population type consistent
+            return rng.integers(low=0,high=2,size=individual_length).tolist()
         else:   #if constraint lambda defined, make sure individual generated doesn't violate constraint
             individual = [0] * individual_length
 

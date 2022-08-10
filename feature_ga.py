@@ -48,9 +48,9 @@ def individual_wrapper_fitness(individual, data, labels, seed):
     #split dataset into training, testing
     data_train, data_test, label_train, label_test = train_test_split(subset_data, labels, test_size = 0.2, random_state = rng.integers(low=0,high=200))
     #train classifier
-    predicted = MLPClassifier(max_iter = 1000, random_state=rng.integers(low=0,high=200)).fit(data_train, label_train).predict(data_test)
+    #predicted = MLPClassifier(max_iter = 1000, random_state=rng.integers(low=0,high=200)).fit(data_train, label_train).predict(data_test)
     #predicted = DecisionTreeClassifier(random_state=rng.integers(low=0,high=200)).fit(data_train, label_train).predict(data_test)
-    #predicted = KNeighborsClassifier(n_neighbors=5).fit(data_train, label_train).predict(data_test)
+    predicted = KNeighborsClassifier(n_neighbors=5).fit(data_train, label_train).predict(data_test)
     #predicted = GaussianNB().fit(data_train, label_train).predict(data_test)
     accuracy = accuracy_score(label_test, predicted)    #calc accuracy
     return accuracy
@@ -103,8 +103,8 @@ if __name__=="__main__":
     dataset_parameters.append((5,30,0.03,1.0,0.3))
     dataset_parameters.append((50,100,0.03,1.0,0.3))
 
-    dataset = datasets[0]
-    dataset_parameter = dataset_parameters[0]
+    dataset = datasets[1]
+    dataset_parameter = dataset_parameters[1]
 
     #for seed 1
     rng = np.random.default_rng(1)
