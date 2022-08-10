@@ -60,8 +60,7 @@ if __name__=="__main__":
     datasets.append(('100_995: ',read_dataset(data_folder_path+'100_995'),1514))
     
     dataset_parameters = [] #stores tuples as (pop size, max iterations, penalty value, elitism rate, crossover rate, mutation rate)
-    dataset_parameters.append((5,10,2,0.03,1.0,0.3))
-    #dataset_parameters.append((50,100,2,0.03,1.0,0.3))
+    dataset_parameters.append((50,100,2,0.03,1.0,0.3))
     dataset_parameters.append((75,100,3,0.03,1.0,0.3))
     dataset_parameters.append((100,100,40,0.1,1.0,0.3))
 

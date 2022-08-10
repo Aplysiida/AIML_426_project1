@@ -20,16 +20,10 @@ class GA:
         prev_avg = -10.0    #start at -10 so never converge at beginning
 
         for i in range(max_iter):   #repeat until stopping criteria is met
-            fitness = self._fitness_pop_eval(pop, self.fitness_func)  #calc total fitness of pop           
+            pop_fitness, fitness, pop = self._fitness_pop_eval(pop, self.fitness_func)  #calc total fitness of pop           
 
-            """
-            for p in pop:
-                print('individual = ',p,' fitness = ',self.fitness_func(p))
-            print('----------')
-            """
-
-            current_avg = np.average([self.fitness_func(individual) for individual in pop[:5]])
-            if(abs(current_avg - prev_avg) < 0.001):   #check for convergence
+            current_avg = np.average(fitness[:5])
+            if(abs(current_avg - prev_avg) < 0.1):   #check for convergence
                 current_convergence_iterations += 1
                 if(current_convergence_iterations > max_convergence_iterations): break
             else: current_convergence_iterations = 0    #no longer at convergence
@@ -38,17 +32,15 @@ class GA:
             prev_avg = current_avg
             avg_best.append(current_avg)
             best_individual = pop[0]    #get best individual from pop
-
-            #new_pop = self._gen_pop(pop, self.rng, self.fitness_func, fitness, pop_size, elitism_rate, crossover_rate, mutation_rate)   
+   
             #generate new population for next generation
-            new_pop = self._gen_pop(pop, fitness, pop_size, self.rng, self.fitness_func, elitism_rate, crossover_rate, mutation_rate)
+            new_pop = self._gen_pop(pop, pop_fitness, pop_size, self.rng, fitness, elitism_rate, crossover_rate, mutation_rate)
             pop = new_pop
 
             num_iterations += 1
 
         best_individual = pop[0]
         best_individual_fitness = self.fitness_func(best_individual)
-        #print('individual = ',best_individual,' fitness = ',best_individual_fitness)
         return avg_best,num_iterations, best_individual_fitness
 
     #Private functions
@@ -73,13 +65,13 @@ class GA:
     """
     Flip the point into the instance with the largest value
     """
-    def _truncate_flip(self, instance, fitness_func):
+    def _truncate_flip(self, instance):
         best_instance, best_value = instance.copy(),0
         for i,bit in enumerate(instance):
             flip_bit = 0 if(bit == 1) else 1
             new_instance = instance.copy()
             new_instance[i] = flip_bit
-            fitness = fitness_func(new_instance)
+            fitness = self.fitness_func(new_instance)
             if (fitness > best_value):
                 best_instance = new_instance
                 best_value = fitness
@@ -88,51 +80,34 @@ class GA:
     """
     flip mutation operator
     """
-    def _mutation(self, instance, rng, fitness_func):
+    def _mutation(self, instance, rng):
         #return self._uniform_flip(instance, rng)
-        return self._truncate_flip(instance,fitness_func)
+        return self._truncate_flip(instance)
 
     #Selection Scheme
-    def _roulette_wheel(self, rng, fitness_func, pop, pop_fitness, pop_size):
+    def _roulette_wheel(self, rng, fitness, pop, pop_fitness, pop_size):
         #calc probabilities of instances in population for roulette wheel
         #if pop fitness 0, then all individuals are equally nonfit
-        prob = [1.0/pop_size for _ in pop] if (pop_fitness == 0) else list(map(lambda x : fitness_func(x)/pop_fitness, pop)) 
+        prob = [1.0/pop_size for _ in pop] if (pop_fitness == 0) else [fitness[i]/pop_fitness for i,x in enumerate(pop)]
         parents = rng.choice(pop_size,size=2,p=prob)  #selection
         return parents
 
     """
     selection operator
     """
-    def _selection(self, rng, fitness_func, pop, pop_fitness, pop_size):
-        return self._roulette_wheel(rng, fitness_func, pop, pop_fitness, pop_size)
+    def _selection(self, rng, fitness, pop, pop_fitness, pop_size):
+        return self._roulette_wheel(rng, fitness, pop, pop_fitness, pop_size)
 
     #Fitness Evaluation
     """
     evaluate fitness of entire population and order population by fitness
+    returns (total pop fitness, list of fitness)
     """
     def _fitness_pop_eval(self, population, fit_func):
-        for p in population:
-            print('individual = ',p,' fitness = ',fit_func(p))
-        #print(population)
-        fitness = list(map(fit_func, population))
-        #sort pop in same order as sorted fitness
-        for f in fitness:
-            print(f)
-        #todo: check doc if way to sort two lists at once using sort()
-        fitness.sort(reverse=True)
-        #population.sort(key = lambda i,x : fitness[i], reverse=True)
-        #pop = list(map(lambda i,x : fitness[i], enumerate(population)))
-        print('--------')
-        for f in fitness:
-                print(f)
-        print('new pop:-----')
-        for p in population:
-            print('individual = ',p,' fitness = ',fit_func(p))
-        return np.sum(fitness), fitness
-        """
-        population.sort(key=fit_func,reverse=True)
-        return np.sum(list(map(fit_func, population)))
-        """
+        fitness = list(map(fit_func, population))   #calculate fitness for eahc individual
+        fitness, population = zip(*sorted(zip(fitness,population), reverse=True)) #sort fitness and population by best fitness
+        return np.sum(fitness), fitness, list(population)
+        
 
     #Generating individuals and population
     """
@@ -164,12 +139,16 @@ class GA:
     """
     Generate population for new generation
     """
-    def _gen_pop(self, original_pop, original_pop_fitness, pop_size, rng, fitness_func, elitism_rate, crossover_rate, mutation_rate):
+    def _gen_pop(self, original_pop, original_pop_fitness, pop_size, rng, fitness, elitism_rate, crossover_rate, mutation_rate):
         new_pop = original_pop[0:int(elitism_rate * pop_size)].copy()    #elitism
+
         while(len(new_pop) < pop_size):
-            parents = self._selection(rng, fitness_func, original_pop, original_pop_fitness, pop_size) #selection
+            parents = self._selection(rng, fitness, original_pop, original_pop_fitness, pop_size) #selection
             if(rng.random() <= crossover_rate):
                 children = self._one_point_crossover(original_pop[parents[0]], original_pop[parents[1]], rng) #crossover
-                children = [self._mutation(child, rng, fitness_func) for child in children]    #mutation
+                children = [self._mutation(child, rng) for child in children]    #mutation
+                #convert nd array back to list to keep population type consistent
+                children = [child.tolist() for child in children]
                 new_pop += children
+
         return new_pop[:pop_size]#avoid new population being bigger than correct pop size
