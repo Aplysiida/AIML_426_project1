@@ -39,4 +39,4 @@ Need:
 Example var X whose image = {x_1,..,x_n}
 	p(x_i) = prob mass function of value x_i(value is obtained from image)
 For subset X
-	p(x_1,..,x_m) = joint prob?
+	p(x_1,..,x_m) = P(X_1 = x_1,...,X_n = x_n) so is joint probability

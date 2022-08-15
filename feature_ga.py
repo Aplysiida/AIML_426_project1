@@ -58,6 +58,11 @@ def individual_wrapper_fitness(individual, data, labels, seed):
 Filter Fitness function
 """
 def individual_filter_fitness(individual,data,labels,label_values,data_values):
+    to_drop = [i for i,value in enumerate(individual) if (value == 0)]
+    subset_data = data.drop(data.columns[to_drop],axis=1) #transform dataset to have only selected features
+    #subset_data_values = data_values.drop(data_values.columns[to_drop],axis=1)
+    subset_data_values = np.delete(data_values, to_drop, axis=1)
+
     #calc H(Y)
     p_y = [np.count_nonzero(labels == label)/len(labels) for label in label_values]
     print('p y = ',p_y)
@@ -66,13 +71,22 @@ def individual_filter_fitness(individual,data,labels,label_values,data_values):
         h_y = h_y - (p * np.log2(p))
     print('h y = ',h_y)
     #calc H(X)
-    #p_x = [] #use np.fromiter to create array of probabilities for each subset x
-    #()/(len(data))
-    #h_x = 1 
+    #for each feature selected subset in data
+    #calc p_x = np.count_nonzero(subset_data == data_value)/len(subset_data) for data_value in data_values
+    p_x = [np.count_nonzero(subset_data == data_value)/len(subset_data) for data_value in subset_data_values]
+    h_x = 0
+    for p in p_x:
+        h_x = h_x - (p * np.log2(p))
+    print('h x = ',h_x)
     #calc H(Y|X)
+    h_yx = 0
+    #for each x
+        #for each y
+            #h_yx = h_yx - (p(x,y) * np.log2(p(x,y)/p_x))
+
     #calc IG(Y;X)
-    #calc and return fit_su
-    #print('hi')
+    ig = h_y
+    return (2.0 * ig)/(h_x + h_y)   #return fit_su
 
 """
 Draw convergence curves for each seed and iteration
@@ -114,8 +128,15 @@ if __name__=="__main__":
     individual = np.random.default_rng().integers(2,size=30)
     data = dataset[0][0]
     labels = dataset[0][1]
-    label_values = np.unique(labels)
-    individual_filter_fitness(individual,data,labels,label_values)
+    label_values = np.unique(labels) #unique class values
+
+    print('data shape = ',data.shape)
+
+    data_values = data.drop_duplicates().to_numpy()  #unique feature values
+    print('--------------------------')
+    print('data values type = ',type(data_values))
+    print('data values shape = ',data_values.shape)
+    individual_filter_fitness(individual,data,labels,label_values,data_values)
     """
     for i,dataset in enumerate(datasets):
         dataset_parameter = dataset_parameters[i]
