@@ -1,0 +1,8 @@
+What is shown is that alpha value needs to be tuned for the datasets so that it is strong enough to ignore solutions that violate the constaint when choosing the best solution, but small enough to acknowledge solutions that only slightly violate the constraint.
+
+
+After tuning alpha penalty for each dataset:
+First dataset: alpha = 2
+Second dataset: alpha = 3
+For third dataset, there is a large number of possible items and a small max constraint. With such a small constraint the alpha value needs to be very small to allow for different solution options
+Third dataset: alpha = 2.09

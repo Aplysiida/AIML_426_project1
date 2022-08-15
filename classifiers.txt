@@ -1,0 +1,26 @@
+avoided ensemble classifiers since need small and very quick classifiers for fitness.
+Generated 20 random feature instances to test fitness speed and accuracy. Want to find a fitness evaluation that is very quick, but still has decent accuracy.
+
+average time taken to run fitness (n/20), average accuracy
+MLP max iter = 1000:
+ dataset1: 1.3796825766563416, 0.898684210526316
+ dataset2: 2.4640956997871397, 0.805952380952381
+KNN n_neighbours = 5:
+ dataset1: 0.023323535919189453, 0.9280701754385964
+ dataset2: 0.022269797325134278, 0.7785714285714287
+Decision Trees:
+ dataset1: 0.011254072189331055, 0.9228070175438597
+ dataset2: 0.013822376728057861, 0.730952380952381
+GaussianNB:
+ dataset1: 0.010050225257873534, 0.9328947368421053
+ dataset2: 0.012449753284454346, 0.6988095238095238
+
+For convergence used abs(current avg - prev avg)/current avg because
+
+KNN chosen, second highest accuracy out of classifiers explored. While taking twice as long as the quickest classifier, still classifies quickly.
+Decision tree chosen, one of fastest classifers and accuracy is decent enough to get a good estimate of feature subset effectiveness.
+
+When evaluating wrapper fitness, the same seed, used for splitting the train and test sets, is used for all seeds and datasets to keep the evaluation as constant as possible since the accuracy output will be compared to other outputs.
+
+Dataset 1: population is low since the fitness function is computationanlly expensive. To make sure that the population still covers a wide range of possible solutions, the mutation rate was increased. The GA converges in < 20 consistently which indicates the optimal value is %insert accuracy here% and the max iter was set to 30.
+Dataset 2: population is once again low because of the computationally expensive fitness evaluation. 

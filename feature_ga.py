@@ -40,7 +40,6 @@ def read_dataset(dataset_path):
 """
 Wrapper fitness function
 """
-#to fix, need same rng as rest of genetic_algo
 def individual_wrapper_fitness(individual, data, labels, seed):
     rng = np.random.default_rng(seed)   #split at same point always to keep consistent results
     to_drop = [i for i,value in enumerate(individual) if (value == 0)]
@@ -58,8 +57,22 @@ def individual_wrapper_fitness(individual, data, labels, seed):
 """
 Filter Fitness function
 """
-def individual_filter_function():
-    print('hi')
+def individual_filter_fitness(individual,data,labels,label_values,data_values):
+    #calc H(Y)
+    p_y = [np.count_nonzero(labels == label)/len(labels) for label in label_values]
+    print('p y = ',p_y)
+    h_y = 0
+    for p in p_y:
+        h_y = h_y - (p * np.log2(p))
+    print('h y = ',h_y)
+    #calc H(X)
+    #p_x = [] #use np.fromiter to create array of probabilities for each subset x
+    #()/(len(data))
+    #h_x = 1 
+    #calc H(Y|X)
+    #calc IG(Y;X)
+    #calc and return fit_su
+    #print('hi')
 
 """
 Draw convergence curves for each seed and iteration
@@ -92,11 +105,18 @@ if __name__=="__main__":
     dataset_parameters.append((40,100,0.03,1.0,0.3))
 
     seed_rng = np.random.default_rng(123)
-    seeds = seed_rng.integers(low=0,high=200,size=5)    
+    seeds = seed_rng.integers(low=0,high=200,size=5)
 
     dataset = datasets[0]
     dataset_parameter = dataset_parameters[0]
 
+    #test filter
+    individual = np.random.default_rng().integers(2,size=30)
+    data = dataset[0][0]
+    labels = dataset[0][1]
+    label_values = np.unique(labels)
+    individual_filter_fitness(individual,data,labels,label_values)
+    """
     for i,dataset in enumerate(datasets):
         dataset_parameter = dataset_parameters[i]
         print('at dataset ',dataset_names[i],':')
@@ -128,3 +148,4 @@ if __name__=="__main__":
         print('mean = ',mean)
         print('standard deviation = ',std)
         draw_convergence_curves(x_values, y_values, dataset_names[i], seeds, mean, std)
+        """

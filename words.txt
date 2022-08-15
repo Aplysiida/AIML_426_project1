@@ -1,0 +1,49 @@
+Project 1: 
+
+The solution for the knapsack problem is a sequence of items that were selected for the knapsack which also keeps track of each item’s value and weight. The order of the selected items does not matter, but constraints such as the maximum weight constraint need to be easily defined into the solution. 
+
+Individual Representation: 
+
+For this GA the chromosome is represented through a bit vector whose length is the number of possible items to choose from and each element represents a possible item to select for the knapsack. For decoding the chromosome into a solution for each bit, 1 represents selecting the item while 0 represents not selecting the item.  
+
+Since the order of the items picked up does not matter, the order of items in the chromosome can be the same as the order of items in the weight and values list. This means that the value and weight can be easily obtained by looking at the index of the chosen item in the chromosome in the values and weights lists. The crossover and mutation genetic operators can easily be applied to the chromosome and the solution can be decoded no matter how much the chromosome has changed. 
+
+Fitness Function: 
+
+The fitness of the knapsack solutions is measured in the maximum value of items chosen while also satisfying the maximum weight constraint. The evaluate the maximum value of the knapsack solution, the sum of values of the items selected is calculated. To implement the constraint a penalty variable is introduced, the formula that is used to evaluate when to use the penalty variable is %insert formula here%. So, when the total weight of the solution is greater than the maximum weight, the penalty is applied. The value of the penalty variable is set to 10.0 to heavily discourage solutions that violate the constraint by setting them with very low fitness. 
+
+%talk about how setting penalty variable too high got best solutions caught up in local optima 
+
+%show different graphs of convergence curve with different penalty value 
+
+Alpha = 1 
+
+Alpha = 3 
+
+Alpha = 5 
+
+Since the fitness values are used in calculating probabilities, fitness >= 0 must be satisfied. 
+
+Genetic Operators 
+
+Selection 
+
+%might change selection schused 
+
+A fitness-proportional/roulette wheel selection scheme is used for this problem. When implementing the roulette wheel selection, the probability: %insert probability formula here% is calculated. A higher probability means a higher chance of being selected either for elitism or for parents. This was chosen since a roulette wheel selection is simple to implement and it encourages selecting high fitness solutions through having a larger probability of being chosen. This is also where the maximum weight constraint is implemented through. 
+
+Crossover 
+
+One-point crossover was used for the crossover genetic operator, since the order of the items selected does not matter, no constraints need to be defined for the split position of the crossover. 
+
+Mutation 
+
+Local search mutation was used for the mutation genetic operator. Instead of randomly selecting a bit and flipping the value, the flip position with the largest increase in value is selected. This does increase the computation requirement since instead of O(1) complexity it is now O(M) complexity requiring to now iterate through each possible flip, but also increase chance of improving population each generation. 
+
+Selection 
+
+The proportional fitness/roulette wheel selection was chosen since it is simple to implement through calculating the probability of being selected for each instance as $$. This probability calculation requires that the fitness value is never negative. 
+
+ 
+
+ 

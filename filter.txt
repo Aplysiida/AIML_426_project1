@@ -1,0 +1,42 @@
+entropy = measure of uncertainty of a random variable
+H(X) = entropy of var X
+H(X|Y) = entropy of X after observing var Y
+P(x_i) = prior probabilities for all values of X - so using the image of X
+To ask: how do you calculate these probabilities in terms of feature selection
+Information Gain:
+IG(X|Y) = H(X) - H(X|Y)
+Calculates the difference in entropy of X and entropy of X given Y
+Shows how much "information" did Y give to X
+Y is more correlated to X than to Z if IG(X|Y) > IG(Z|Y)
+
+Information gain is biased towards features with more values
+Which is for feature with larger range of values in its image.
+
+Information Gain Ratio:
+IGR(X,Y) = (IG(X|Y))/(H(Y))
+
+Symmetrical Uncertainty from [Press1988]:
+SU(X,Y) = 2*(IG(X|Y)/(H(X)+H(Y)))
+Normalises its value to range[0,1]
+1 = knowledge of value of either one predicts the value of the other one
+0 = X and Y are independent
+Takes into account H(X) which means bias in H(X) is also dealt with.
+Chose symmetrical uncertainty for this project and use explanation about handling bias in H(Y) and H(X) for reason why.
+
+Implementation:
+Need: 
+	discrete features
+	p(y) = probability of being class value y(1 or 2) = (number of instances with class y)/(total number of instances)
+	p(x) = probability of being feature subset value X(X is a set of selected features, 
+								   keep in mind that you don't need to care about other selected features subsets for this probability,
+								   selected feature subset being x_1,...,x_n where x is a selected feature(in instance representation is where feature is 1 not 0)) 
+								= (number of instances with feature subset with values x_1,...,x_n)/(total number of feature subsets)
+		total number of feature subsets = every instance in dataset, but converted to selected features by ignoring other unselected 0 features	
+
+	H(X) = sum(for each feature subset x_1,...,x_n)( p(x_1,...,x_n) *log_2(p(x_1,...,x_n)) )
+	H(Y) = sum(for each class y)( p(y) * log_2(p(y)) )
+
+Example var X whose image = {x_1,..,x_n}
+	p(x_i) = prob mass function of value x_i(value is obtained from image)
+For subset X
+	p(x_1,..,x_m) = joint prob?

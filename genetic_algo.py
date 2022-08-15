@@ -23,7 +23,7 @@ class GA:
             pop_fitness, fitness, pop = self._fitness_pop_eval(pop, self.fitness_func)  #calc total fitness of pop           
 
             current_avg = np.average(fitness[:5])
-            if(abs(current_avg - prev_avg) < 0.001):   #check for convergence
+            if(abs(current_avg - prev_avg)/abs(current_avg) < 0.01):   #check for convergence
                 current_convergence_iterations += 1
                 if(current_convergence_iterations > max_convergence_iterations): break
             else: current_convergence_iterations = 0    #no longer at convergence
