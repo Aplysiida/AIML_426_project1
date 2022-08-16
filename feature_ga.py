@@ -33,9 +33,11 @@ def read_dataset(dataset_path):
     #get labels
     labels = data.iloc[:,feature_num]
     labels.columns = ['class']
-    data = data.drop(labels='class',axis=1) #remove labels from data
+    #data = data.drop(labels='class',axis=1) #remove labels from data
+    data.sort_values(by=data.columns[:-1].tolist(), inplace=True, ignore_index=True)   #sort data set by feature values
 
-    return (data,labels),feature_num
+    #return (data,labels),feature_num
+    return data, feature_num
 
 """
 Wrapper fitness function
@@ -57,36 +59,39 @@ def individual_wrapper_fitness(individual, data, labels, seed):
 """
 Filter Fitness function
 """
-def individual_filter_fitness(individual,data,labels,label_values,data_values):
+def individual_filter_fitness(individual,data,data_values,label_values):
     to_drop = [i for i,value in enumerate(individual) if (value == 0)]
     subset_data = data.drop(data.columns[to_drop],axis=1) #transform dataset to have only selected features
-    #subset_data_values = data_values.drop(data_values.columns[to_drop],axis=1)
-    subset_data_values = np.delete(data_values, to_drop, axis=1)
+    subset_data_values = data_values.drop(data_values.columns[to_drop], axis=1)
 
-    #calc H(Y)
-    p_y = [np.count_nonzero(labels == label)/len(labels) for label in label_values]
-    print('p y = ',p_y)
-    h_y = 0
-    for p in p_y:
-        h_y = h_y - (p * np.log2(p))
-    print('h y = ',h_y)
-    #calc H(X)
-    #for each feature selected subset in data
-    #calc p_x = np.count_nonzero(subset_data == data_value)/len(subset_data) for data_value in data_values
-    p_x = [np.count_nonzero(subset_data == data_value)/len(subset_data) for data_value in subset_data_values]
-    h_x = 0
-    for p in p_x:
-        h_x = h_x - (p * np.log2(p))
-    print('h x = ',h_x)
-    #calc H(Y|X)
-    h_yx = 0
-    #for each x
-        #for each y
-            #h_yx = h_yx - (p(x,y) * np.log2(p(x,y)/p_x))
+    y_count = [np.count_nonzero(subset_data.loc[:,'class'] == label) for label in label_values]
 
-    #calc IG(Y;X)
-    ig = h_y
-    return (2.0 * ig)/(h_x + h_y)   #return fit_su
+    h_yx,h_x,h_y = 0,0,0    #entropy
+    for i in range(len(subset_data_values.index)-1):    #for X
+        start = subset_data_values.iloc[i].name
+        end = subset_data_values.iloc[i+1].name
+        instances = subset_data[start:end]  #get all instances of value x in data X
+        x_count = len(instances)
+        p_x = x_count/len(subset_data)
+        h_x = h_x - (p_x * np.log2(p_x))    #calc entropy for feature set/X
+
+        for label in label_values:  #for Y
+            xy_count = np.count_nonzero(instances.loc[:,'class'] == label)  
+            
+            p_yx = (xy_count/len(subset_data)) / (x_count/len(subset_data)) #calc conditional probability P(Y|X)
+            to_add = (p_x * p_yx * np.log2(p_yx)) if (p_yx > 0) else 0
+            h_yx = h_yx - (to_add)  #calc conditional entropy H(Y|X)
+    
+    for label_count in y_count: #calc probabilities and entropies of Y/classes
+        p_y = label_count/len(subset_data)
+        h_y = h_y - (p_y * np.log2(p_y))
+        
+
+    print('h_yx = ',h_yx,' h_x = ',h_x,' h_y = ',h_y)
+    ig_yx = h_y - h_yx  #calc information gain
+    print('info gain = ',ig_yx)
+    print('symmetric = ',((2.0 * ig_yx) / (h_x + h_y)))
+    return (2.0 * ig_yx) / (h_x + h_y)    #calc and return symmetric uncertainty
 
 """
 Draw convergence curves for each seed and iteration
@@ -126,17 +131,14 @@ if __name__=="__main__":
 
     #test filter
     individual = np.random.default_rng().integers(2,size=30)
-    data = dataset[0][0]
-    labels = dataset[0][1]
-    label_values = np.unique(labels) #unique class values
+    #data = dataset[0][0]
+    #labels = dataset[0][1]
+    data = dataset[0]
+    
+    data_values = data.drop_duplicates(subset = data.columns[:-1])  #unique feature values
+    label_values = data.loc[:,'class'].drop_duplicates() #unique class values
+    individual_filter_fitness(individual,data,data_values,label_values)
 
-    print('data shape = ',data.shape)
-
-    data_values = data.drop_duplicates().to_numpy()  #unique feature values
-    print('--------------------------')
-    print('data values type = ',type(data_values))
-    print('data values shape = ',data_values.shape)
-    individual_filter_fitness(individual,data,labels,label_values,data_values)
     """
     for i,dataset in enumerate(datasets):
         dataset_parameter = dataset_parameters[i]

@@ -21,7 +21,7 @@ Normalises its value to range[0,1]
 1 = knowledge of value of either one predicts the value of the other one
 0 = X and Y are independent
 Takes into account H(X) which means bias in H(X) is also dealt with.
-Chose symmetrical uncertainty for this project and use explanation about handling bias in H(Y) and H(X) for reason why.
+Chose symmetrical uncertainty for this project and use explanation that symmetrical uncertainty takes into account the bias of number of values in Y as well compared to information gain ratio which only takes into account bias of number of values in X. Though the number of values in X are much greater than Y in this problem, this makes the fitness function more flexible for datasets with a very big range of class labels.
 
 Implementation:
 Need: 
@@ -40,3 +40,6 @@ Example var X whose image = {x_1,..,x_n}
 	p(x_i) = prob mass function of value x_i(value is obtained from image)
 For subset X
 	p(x_1,..,x_m) = P(X_1 = x_1,...,X_n = x_n) so is joint probability
+
+Need to figure out how to calculate joint prob p(x,y)(remember p(x,y) = p(x) * p(y) only if x and y are independent)
+Need to figure out how to calculate conditional prob p(y|x) = p(y)/p(x)?
