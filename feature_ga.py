@@ -1,3 +1,4 @@
+import enum
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -58,39 +59,39 @@ def individual_wrapper_fitness(individual, data, labels, seed):
 
 """
 Filter Fitness function
+    data = dataset with data and labels
+    data_values = range of possible instances X
+    label_values = range of possible classes Y
 """
 def individual_filter_fitness(individual,data,data_values,label_values):
+    #use only selected features in measuring fitness
     to_drop = [i for i,value in enumerate(individual) if (value == 0)]
     subset_data = data.drop(data.columns[to_drop],axis=1) #transform dataset to have only selected features
     subset_data_values = data_values.drop(data_values.columns[to_drop], axis=1)
 
+    #array where each element = number of instances with label y in classes set Y
     y_count = [np.count_nonzero(subset_data.loc[:,'class'] == label) for label in label_values]
 
     h_yx,h_x,h_y = 0,0,0    #entropy
-    for i in range(len(subset_data_values.index)-1):    #for X
+    for i in range(len(subset_data_values.index)-1):    #iterate through possible values for X
         start = subset_data_values.iloc[i].name
         end = subset_data_values.iloc[i+1].name
-        instances = subset_data[start:end]  #get all instances of value x in data X
-        x_count = len(instances)
-        p_x = x_count/len(subset_data)
-        h_x = h_x - (p_x * np.log2(p_x))    #calc entropy for feature set/X
+        instances = subset_data[start:end]  #get all instances of value x in possible values X
+        x_count = len(instances)    #number of instances with value x in data
+        p_x = x_count/len(subset_data)  #probability(X = x)
+        h_x = h_x - (p_x * np.log2(p_x))    #calc entropy for X
 
-        for label in label_values:  #for Y
-            xy_count = np.count_nonzero(instances.loc[:,'class'] == label)  
-            
-            p_yx = (xy_count/len(subset_data)) / (x_count/len(subset_data)) #calc conditional probability P(Y|X)
-            to_add = (p_x * p_yx * np.log2(p_yx)) if (p_yx > 0) else 0
+        for label in label_values:  #iterate through possible values for Y
+            xy_count = np.count_nonzero(instances.loc[:,'class'] == label)     #number of instances that intersect x and y sets
+            p_yx = (xy_count/len(subset_data)) / (x_count/len(subset_data)) #calc conditional probability(Y|X)
+            to_add = (p_x * p_yx * np.log2(p_yx)) if (p_yx > 0) else 0  #calculate conditional entropy for each value
             h_yx = h_yx - (to_add)  #calc conditional entropy H(Y|X)
     
-    for label_count in y_count: #calc probabilities and entropies of Y/classes
+    for label_count in y_count: #calc probabilities and entropies of Y
         p_y = label_count/len(subset_data)
         h_y = h_y - (p_y * np.log2(p_y))
         
-
-    print('h_yx = ',h_yx,' h_x = ',h_x,' h_y = ',h_y)
     ig_yx = h_y - h_yx  #calc information gain
-    print('info gain = ',ig_yx)
-    print('symmetric = ',((2.0 * ig_yx) / (h_x + h_y)))
     return (2.0 * ig_yx) / (h_x + h_y)    #calc and return symmetric uncertainty
 
 """
@@ -125,21 +126,9 @@ if __name__=="__main__":
 
     seed_rng = np.random.default_rng(123)
     seeds = seed_rng.integers(low=0,high=200,size=5)
-
-    dataset = datasets[0]
-    dataset_parameter = dataset_parameters[0]
-
-    #test filter
-    individual = np.random.default_rng().integers(2,size=30)
-    #data = dataset[0][0]
-    #labels = dataset[0][1]
-    data = dataset[0]
     
-    data_values = data.drop_duplicates(subset = data.columns[:-1])  #unique feature values
-    label_values = data.loc[:,'class'].drop_duplicates() #unique class values
-    individual_filter_fitness(individual,data,data_values,label_values)
-
-    """
+    #filter
+    #todo: run filter and see how it works
     for i,dataset in enumerate(datasets):
         dataset_parameter = dataset_parameters[i]
         print('at dataset ',dataset_names[i],':')
@@ -148,11 +137,55 @@ if __name__=="__main__":
         x_values = [] #iterations range for each GA 
         y_values = [] #average of 5 best individuals each iteration
 
+        data = dataset[0]
+
+        #discretise feature instances/ get images for X and Y
+        data_values = data.drop_duplicates(subset = data.columns[:-1]).drop('class',axis=1)  #unique feature values
+        label_values = data.loc[:,'class'].drop_duplicates() #unique class values
+        fitness_func = lambda x : individual_filter_fitness(x,data,data_values,label_values)
+
         for seed in seeds:
             print('seed = ',seed)
             rng = np.random.default_rng(seed)
-            fitness_func = lambda x : individual_wrapper_fitness(x,dataset[0][0],dataset[0][1],1)
-    
+
+            item_length = dataset[1]
+            FilterGA = genetic_algo.GA(rng, dataset, item_length, fitness_func)
+            y,x,best = FilterGA.GA_solution(
+                pop_size = dataset_parameter[0],
+                max_iter = dataset_parameter[1],
+                elitism_rate= dataset_parameter[2],
+                crossover_rate= dataset_parameter[3],
+                mutation_rate= dataset_parameter[4]
+            )
+
+            GA_output.append(best)
+            x_values.append(range(x))
+            y_values.append(y)
+
+        mean = np.mean(GA_output)
+        std = np.std(GA_output)
+        print('mean = ',mean)
+        print('standard deviation = ',std)
+        draw_convergence_curves(x_values, y_values, dataset_names[i], seeds, mean, std)
+
+ """
+    #wrapper
+    for i,dataset in enumerate(datasets):
+        dataset_parameter = dataset_parameters[i]
+        print('at dataset ',dataset_names[i],':')
+
+        GA_output = []  #GA best solution from each seed
+        x_values = [] #iterations range for each GA 
+        y_values = [] #average of 5 best individuals each iteration
+
+        data = dataset[0].drop('class',axis=1)
+        labels = dataset[0].loc[:,'class']
+        
+        fitness_func = lambda x : individual_wrapper_fitness(x,data,labels,1)
+        for seed in seeds:
+            print('seed = ',seed)
+            rng = np.random.default_rng(seed)
+
             item_length = dataset[1]
             WrapperGA = genetic_algo.GA(rng, dataset, item_length, fitness_func)
             y,x,best = WrapperGA.GA_solution(
