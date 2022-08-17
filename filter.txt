@@ -45,3 +45,7 @@ Need to figure out how to calculate joint prob p(x,y)(remember p(x,y) = p(x) * p
 Need to figure out how to calculate conditional prob p(y|x) = (num of value/total num of instances)/(num of value X/total num of instances)
 What to keep in mind: Since there are no duplicate instances present in wbcd dataset and only one class label per instance, p(y|x) = 0 for some classes and thus H(y|x) = 0 to avoid inf problem in log_2(p(y|x)) and since no label could be seen as no entropy.
 
+Todo: check if filter fitness implemented through:
+	sklearn
+	pandas
+My implementation very slow, slower than wrapper

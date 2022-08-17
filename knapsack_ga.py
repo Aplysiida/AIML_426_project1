@@ -83,7 +83,7 @@ if __name__=="__main__":
             print('seed = ',seed)
             rng = np.random.default_rng(seed)   #set up rng so can get consistent results based on seed
             ga = genetic_algo.GA(rng, dataset, item_length, fitness_func, constraint)
-            y,x,best = ga.GA_solution(pop_size = dataset_parameters[0][0],
+            y,x,best,_ = ga.GA_solution(pop_size = dataset_parameters[0][0],
                    max_iter = dataset_parameters[0][1],
                    elitism_rate=dataset_parameters[0][3],
                    crossover_rate=dataset_parameters[0][4],

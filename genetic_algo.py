@@ -41,7 +41,7 @@ class GA:
 
         best_individual = pop[0]
         best_individual_fitness = self.fitness_func(best_individual)   
-        return avg_best,num_iterations, best_individual_fitness
+        return avg_best,num_iterations, best_individual_fitness, best_individual
 
     #Private functions
     #Genetic Operators
