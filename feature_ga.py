@@ -38,13 +38,6 @@ def read_dataset(dataset_path):
     #data = data.drop(labels='class',axis=1) #remove labels from data
     data.sort_values(by=data.columns[:-1].tolist(), inplace=True, ignore_index=True)   #sort data set by feature values
 
-    #small data
-    data = data.iloc[0:11,0:6]
-    data['class'] = labels
-    data = data.append(data.loc[1],ignore_index=True)
-    data = data.append(data.loc[1],ignore_index=True)
-    data = data.append(data.loc[3],ignore_index=True)
-
     #return (data,labels),feature_num
     return data, feature_num
 
@@ -72,23 +65,30 @@ Filter Fitness function
     data_values = range of possible instances X
     label_values = range of possible classes Y
 """
-def individual_filter_fitness(individual,data, x_count, y_count):
+def individual_filter_fitness(individual,data, y_count):
     #drop unselected features in individual
-    #TODO
+    to_drop = [i for i,value in enumerate(individual) if (value == 0)]
+    subset_data = data.drop(data.columns[to_drop],axis=1) #transform dataset to have only selected features
+    #group the classes of the same instances together
+    class_list = subset_data.groupby(by=subset_data.columns[:-1].tolist()).agg(lambda x: x.values.tolist())   
 
-    total_num = len(data.index)
+    #count x
+    x_count = list(zip(list(subset_data.iloc[:,:-1].drop_duplicates(subset=subset_data.columns[:-1]).itertuples(index=False,name=None)), #get instance
+                       list(subset_data.iloc[:,:-1].value_counts(sort=False)), #get number of occurances of this instance
+                       [class_count[1][0] for class_count in class_list.iterrows()]  #get labels for the instances
+                ))
+
+    total_num = len(subset_data.index)
     #calc H(X)
     h_x = 0.0
     for x,x_num,_ in x_count:
         p_x = x_num/total_num
         h_x = h_x - (p_x * np.log2(p_x))
-    print('hx = ',h_x)
     #calc H(Y)
     h_y = 0.0
     for y,y_num in y_count:
         p_y = y_num/total_num
         h_y = h_y - (p_y * np.log2(p_y))
-    print('hy = ',h_y)
     #calc H(Y|X)
     h_yx = 0.0
     for x,x_num,class_num in x_count:
@@ -98,37 +98,9 @@ def individual_filter_fitness(individual,data, x_count, y_count):
             p_yx = (yx_count / total_num) / p_x
             if (p_yx > 0.0):    #if such a conditional probability exists then it will affect entropy
                 h_yx = h_yx - (p_x * p_yx * np.log2(p_yx))
-    print('h_yx = ',h_yx)
     
     ig = h_y - h_yx #calc info gain
-    print('ig = ',ig)
     return (2.0 * ig) / (h_x + h_y)
-    
-    #use only selected features in measuring fitness
-    #to_drop = [i for i,value in enumerate(individual) if (value == 0)]
-    #subset_data = data.drop(data.columns[to_drop],axis=1).drop('class',axis=1) #transform dataset to have only selected features
-    #labels = data.loc[:,'class']
-
-    """for i in range(len(subset_data_values.index)-1):    #iterate through possible values for X
-        start = subset_data_values.iloc[i].name
-        end = subset_data_values.iloc[i+1].name
-        instances = subset_data[start:end]  #get all instances of value x in possible values X
-        x_count = len(instances)    #number of instances with value x in data
-        p_x = x_count/len(subset_data)  #probability(X = x)
-        h_x = h_x - (p_x * np.log2(p_x))    #calc entropy for X
-
-        for label in label_values:  #iterate through possible values for Y
-            xy_count = np.count_nonzero(instances.loc[:,'class'] == label)     #number of instances that intersect x and y sets
-            p_yx = (xy_count/len(subset_data)) / (x_count/len(subset_data)) #calc conditional probability(Y|X)
-            to_add = (p_x * p_yx * np.log2(p_yx)) if (p_yx > 0) else 0  #calculate conditional entropy for each value
-            h_yx = h_yx - (to_add)  #calc conditional entropy H(Y|X)
-    
-    for label_count in y_count: #calc probabilities and entropies of Y
-        p_y = label_count/len(subset_data)
-        h_y = h_y - (p_y * np.log2(p_y))
-        
-    ig_yx = h_y - h_yx  #calc information gain
-    """
 
 """
 Draw convergence curves for each seed and iteration
@@ -195,36 +167,39 @@ if __name__=="__main__":
 
     #warm up JIT to get accurate times
 
-    dataset = datasets[0]
-    dataset_parameter = dataset_parameters[0]
-    data= dataset[0]
 
-    individual = np.random.default_rng().integers(low=0,high=2,size=dataset[1])
-    #for y (label, num of label occurences in dataset)
-    label_count = list(zip(data.loc[:,'class'].unique(), data.loc[:,'class'].value_counts(sort=False)))
-    #for x (feature combination, num of occurences in dataset)
-    instance_count = list(zip(list(data.drop_duplicates(subset=data.columns[:-1]).itertuples(index=False,name=None)), 
-                   list(data.iloc[:,:-1].value_counts(sort=False))
-                   ))
-    class_list = data.groupby(by=data.columns[:-1].tolist()).agg(lambda x: x.values.tolist())   #group the classes of the same instances together
-
-    instance_count = list(zip(list(data.drop_duplicates(subset=data.columns[:-1]).itertuples(index=False,name=None)), #get instance
-                   list(data.iloc[:,:-1].value_counts(sort=False)), #get number of occurances of this instance
-                   [class_count[1][0] for class_count in class_list.iterrows()]  #get labels for the instances
-                   ))
-
-    print(data)
-    print('----')
-    individual_filter_fitness(individual,data,instance_count, label_count)
-
-    """
     #filterGA
+    print('Running FilterGA')
     for i,dataset in enumerate(datasets):
         dataset_parameter = dataset_parameters[i]
         print('at dataset ',dataset_names[i],':')
 
+        data = dataset[0]
+        
+        label_count = list(zip(data.loc[:,'class'].unique(), data.loc[:,'class'].value_counts(sort=False)))
+
+        fitness_func = lambda x : individual_filter_fitness(x,
+                                                            data,
+                                                            label_count
+                                                            )
+        data = dataset[0].drop('class',axis=1)
+        labels = dataset[0].loc[:,'class']
+        seed = 1
+        performance_func = lambda x : individual_wrapper_fitness(x,
+                                                                 MLPClassifier(max_iter = 1000, random_state=seed),
+                                                                 data,
+                                                                 labels,
+                                                                 seed
+                                                                )
+        
+        avg_time, std_time, avg_performance, std_performance = run_seeds(dataset, dataset_parameter, seeds, fitness_func, performance_func)
+        print('average time = ',avg_time,
+              ' standard deviation time = ',std_time)
+        print('average performance = ',avg_performance,
+              ' standard deviation performance = ',std_performance)
 
     #wrapperGA
+    print('Running WrapperGA')
     for i,dataset in enumerate(datasets):
         dataset_parameter = dataset_parameters[i]
         print('at dataset ',dataset_names[i],':')
@@ -239,86 +214,10 @@ if __name__=="__main__":
                                                              labels,
                                                              seed
                                                             )
-        performance_func = lambda x : individual_wrapper_fitness(x,
-                                                                 MLPClassifier(max_iter = 1000, random_state=seed),
-                                                                 data,
-                                                                 labels,
-                                                                 seed
-                                                                )
+        
 
         avg_time, std_time, avg_performance, std_performance = run_seeds(dataset, dataset_parameter, seeds, fitness_func, performance_func)
         print('average time = ',avg_time,
               ' standard deviation time = ',std_time)
         print('average performance = ',avg_performance,
               ' standard deviation performance = ',std_performance)
-    """
-    """
-    for i,dataset in enumerate(datasets):
-        dataset_parameter = dataset_parameters[i]
-        print('at dataset ',dataset_names[i],':')
-
-        GA_output = []  #GA best solution from each seed
-        x_values = [] #iterations range for each GA 
-        y_values = [] #average of 5 best individuals each iteration
-
-        data = dataset[0]
-
-        #discretise feature instances/ get images for X and Y
-        data_values = data.drop_duplicates(subset = data.columns[:-1]).drop('class',axis=1)  #unique feature values
-        label_values = data.loc[:,'class'].drop_duplicates() #unique class values
-        fitness_func = lambda x : individual_filter_fitness(x,data,data_values,label_values)
-
-        y,x,best = run_seeds(dataset, dataset_parameter, seeds, fitness_func)
-
-        GA_output.append(best)
-        x_values.append(range(x))
-        y_values.append(y)
-
-    mean = np.mean(GA_output)
-    std = np.std(GA_output)
-    print('mean = ',mean)
-    print('standard deviation = ',std)
-    draw_convergence_curves(x_values, y_values, dataset_names[i], seeds, mean, std)
-    """
-
-    """
-    #filter
-    for i,dataset in enumerate(datasets):
-        dataset_parameter = dataset_parameters[i]
-        print('at dataset ',dataset_names[i],':')
-
-        GA_output = []  #GA best solution from each seed
-        x_values = [] #iterations range for each GA 
-        y_values = [] #average of 5 best individuals each iteration
-
-        data = dataset[0]
-
-        #discretise feature instances/ get images for X and Y
-        data_values = data.drop_duplicates(subset = data.columns[:-1]).drop('class',axis=1)  #unique feature values
-        label_values = data.loc[:,'class'].drop_duplicates() #unique class values
-        fitness_func = lambda x : individual_filter_fitness(x,data,data_values,label_values)
-
-        for seed in seeds:
-            print('seed = ',seed)
-            rng = np.random.default_rng(seed)
-
-            item_length = dataset[1]
-            FilterGA = genetic_algo.GA(rng, dataset, item_length, fitness_func)
-            y,x,best = FilterGA.GA_solution(
-                pop_size = dataset_parameter[0],
-                max_iter = dataset_parameter[1],
-                elitism_rate= dataset_parameter[2],
-                crossover_rate= dataset_parameter[3],
-                mutation_rate= dataset_parameter[4]
-            )
-
-            GA_output.append(best)
-            x_values.append(range(x))
-            y_values.append(y)
-
-        mean = np.mean(GA_output)
-        std = np.std(GA_output)
-        print('mean = ',mean)
-        print('standard deviation = ',std)
-        draw_convergence_curves(x_values, y_values, dataset_names[i], seeds, mean, std)
-        """
