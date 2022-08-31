@@ -1,5 +1,7 @@
 #ignore datasets
 data/
+#ignore report pdf
+*.pdf
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

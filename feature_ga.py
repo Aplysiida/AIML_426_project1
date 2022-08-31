@@ -32,13 +32,8 @@ def read_dataset(dataset_path):
     data = pd.read_table(dataset_path[1]+dataset_path[0]+'.data', sep = ',',header=None)
     data.columns = columns+['class']
 
-    #get labels
-    labels = data.iloc[:,feature_num]
-    labels.columns = ['class']
-    #data = data.drop(labels='class',axis=1) #remove labels from data
     data.sort_values(by=data.columns[:-1].tolist(), inplace=True, ignore_index=True)   #sort data set by feature values
 
-    #return (data,labels),feature_num
     return data, feature_num
 
 """
@@ -164,9 +159,6 @@ if __name__=="__main__":
 
     seed_rng = np.random.default_rng(123)
     seeds = seed_rng.integers(low=0,high=200,size=5)
-
-    #warm up JIT to get accurate times
-
 
     #filterGA
     print('Running FilterGA')

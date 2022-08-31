@@ -26,6 +26,18 @@
             ],
             "console": "integratedTerminal",
             "justMyCode": true
+        },
+        {
+            "name": "Python: NSGA",
+            "type": "python",
+            "request": "launch",
+            "program": "nsga_ga.py",
+            "args": [
+                "data/vehicle/",
+                "data/musk/"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
         }
     ]
 }
