@@ -112,32 +112,32 @@ Classifier & Speed(seconds) & Accuracy(in \%)\\
 \hline
 MLP max iter = 1000 & \multicolumn{2}{c|}{wbcd} \\
 \hline
-& 1.3796825766563416 & 0.898684210526316 \\
+& 1.380s & 89.868\% \\
 \hline
 & \multicolumn{2}{c|}{sonar} \\
 \hline
- & 2.4640956997871397 & 0.805952380952381 \\
+ & 2.464s & 80.595\% \\
 \hline
 KNN n\_neighbours = 5 & \multicolumn{2}{c|}{wbcd} \\
-& 0.023323535919189453 & 0.9280701754385964 \\
+& 0.0233s & 92.807\% \\
 \hline
 & \multicolumn{2}{c|}{sonar} \\
 \hline
-& 0.022269797325134278 & 0.7785714285714287 \\
+& 0.0223s & 77.857\% \\
 \hline
 Decision Trees & \multicolumn{2}{c|}{wbcd} \\
-& 0.011254072189331055 & 0.9228070175438597 \\
+& 0.0113s & 92.281\% \\
 \hline
 & \multicolumn{2}{c|}{sonar} \\
 \hline
-& 0.013822376728057861 & 0.730952380952381 \\
+& 0.0138s & 73.095\% \\
 \hline
 GaussianNB & \multicolumn{2}{c|}{wbcd} \\
-& 0.010050225257873534 & 0.9328947368421053 \\
+& 0.0101s & 93.289\% \\
 \hline
 & \multicolumn{2}{c|}{sonar} \\
 \hline
-& 0.012449753284454346 & 0.6988095238095238 \\
+& 0.0124s & 69.881\% \\
 \hline
 \end{tabular}
 \end{center}
@@ -151,6 +151,48 @@ To measure the time taken by the GAs the Python function time.time() was used to
 \noindent For measuring the performance of the GA the best individual in the final generation was selected and the MLP classifier was applied to the dataset of selected features. This classifier was chosen since MLP gives the highest accuracy and since this accuracy evaluation is only run a few times the slow time of the MLP classifier does not affect the evaluation time. 
 \begin{center}
 %Display the table of time and performance 
+\begin{tabular}{|c|c|c|}
+\hline
+Fitness & Average Time(seconds) & Standard Deviation Time(seconds) \\
+\hline
+FilterGA & \multicolumn{2}{c|}{wbcd} \\
+\hline
+& 137.505s & 6.170s \\
+\hline
+& \multicolumn{2}{c|}{sonar} \\
+\hline
+& 695.327s & 13.814s \\
+\hline
+WrapperGA & \multicolumn{2}{c|}{wbcd} \\
+\hline
+& 19.471s & 2.090s \\
+\hline
+& \multicolumn{2}{c|}{sonar} \\
+\hline
+& 282.266s & 39.191s \\
+\hline
+\end{tabular}
+\begin{tabular}{|c|c|c|}
+\hline
+Fitness & Average Performance & Standard Deviation Performance \\
+\hline
+FilterGA & \multicolumn{2}{c|}{wbcd} \\
+\hline
+& 91.228\% & 4.114\% \\
+\hline
+& \multicolumn{2}{c|}{sonar} \\
+\hline
+& 82.857\% & 4.617\% \\
+\hline
+WrapperGA & \multicolumn{2}{c|}{wbcd} \\
+\hline
+& 93.158\% & 0.656\% \\
+\hline
+& \multicolumn{2}{c|}{sonar} \\
+\hline
+& 80.952\% & 7.222\% \\
+\hline
+\end{tabular}
 \end{center}
 Since the sonar dataset has twice as many features compared to the wbcd dataset and more than twice as many instances, more time was taken to evaluate the final feature subset. The filterGA took around 3 times as long to evaluate the final solution compared to the wrapperGA. Thus, the time advantage that the filter fitness usually has, was not applied to this problem. The reason why the filterGA is slower is because of the implementation of the filter fitness evaluation. Unlike the wrapperGA where the classifier was called from a library where it would be optimized, the filter fitness was implemented without using any libraries and thus is very unoptimized. There is also the structure of the datasets, since the filterGA works with discrete features and the features in the datasets are continuous. When the features are discretized, there are no duplicate features and thus the probabilities calculated for each feature were the same. Which could lead to lack of quickly emphasizing certain features through the generations. \par
 \noindent The average performance for wrapperGA is similar to the performance of the filterGA, with the filterGA excelling for the sonar dataset. The worse performance by the WrapperGA could have happened due to the KNN classifier used. KNN had good time but only decent accuracy, if the MLP classifier was used then the accuracy of the wrapperGA could be greater than the filterGA but with the time taken to evaluate being greater as well. \par
@@ -158,4 +200,5 @@ Since the sonar dataset has twice as many features compared to the wbcd dataset 
 For the datasets used, the wrapperGA is the better option due to the use of continuous features in the dataset. If the datasets were much bigger and thus is more time-consuming for the classifiers or if you need the fitness to be independent from the classifier, then the filter fitness would be a better option. \par
 \noindent Comparing the filterGA and the wrapperGA on discrete datasets could lead to different results where the filterGA excels due to it being designed for discrete features. \par
 \section*{Part 3}
+
 \end{document}
