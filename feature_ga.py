@@ -125,7 +125,7 @@ def run_seeds(dataset, dataset_parameter, seeds, fitness_func, performance_func)
         item_length = dataset[1]
         
         start_time = time.time()
-        ga = genetic_algo.GA(rng, dataset, item_length, fitness_func)
+        ga = genetic_algo.Genetic_Algo(rng, dataset, item_length, fitness_func)
         _,_,_,best = ga.GA_solution(
                 pop_size = dataset_parameter[0],
                 max_iter = dataset_parameter[1],

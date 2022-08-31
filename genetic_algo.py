@@ -1,6 +1,6 @@
 import numpy as np
 
-class GA:
+class Genetic_Algo:
     #Public functions
     """
     Constructors GA Parameters: rng, fitness_func, constraint(should return true if satisfied)

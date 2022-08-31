@@ -44,6 +44,10 @@ Selection
 
 The proportional fitness/roulette wheel selection was chosen since it is simple to implement through calculating the probability of being selected for each instance as $$. This probability calculation requires that the fitness value is never negative. 
 
- 
-
- 
+Part 3:
+Individual rep:
+Each individual needs to keep track of classification performance and ratio of selected features. The bit vector is used again for this problem where the classification performance is determined by using a wrapper classifier on the features subset and the ratio of selected features is determined by #insert the math formula (number of 1s in bit vector)/(total length of bit vector). For individual generation, since there are no constraints it uses the same generation as used for Part 2.
+Wrapper-based fitness function:
+KNN is used for the wrapper fitness used in the classification performance since it has a good balance of accuracy and speed.
+Genetic Operators:
+Since this problem uses the same instance representation and problem used for Part 2, the same genetic operators are used for this problem.
