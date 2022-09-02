@@ -149,8 +149,6 @@ if __name__=="__main__":
 
     #for each dataset
     for i,(data, labels, feature_num) in enumerate(datasets):
-        if(i == 0): continue
-        print('i = ',i)
         print('at dataset ',datasets_names[i])
         dataset_parameter = dataset_parameters[i]
         #calc accuracy of using entire dataset

@@ -82,3 +82,28 @@ average time: 282.2658628463745
 standard deviation time: 39.19126361474179
 average accuracy: 0.8095238095238095
 standard deviation accuracy: 0.07221786137191952
+
+
+Part 3
+at dataset  vehicle
+error rate using all features =  0.21158392434988182
+seed =  94
+best solution error rate =  0.15602836879432624
+hypervolume of solution =  0.7528053585500395
+seed =  102
+best solution error rate =  0.15839243498817968
+hypervolume of solution =  0.7518465983714212
+seed =  151
+best solution error rate =  0.16666666666666663
+hypervolume of solution =  0.7457000262674023
+at dataset  clean1
+error rate using all features =  0.06302521008403361
+seed =  94
+best solution error rate =  0.010504201680672232
+hypervolume of solution =  0.9154530727953833
+seed =  102
+best solution error rate =  0.014705882352941124
+hypervolume of solution =  0.9017090209577809
+seed =  151
+best solution error rate =  0.012605042016806678
+hypervolume of solution =  0.8890204515541158
