@@ -2,6 +2,7 @@
 
 \usepackage{graphicx}
 \usepackage{subcaption}
+\usepackage{amsmath}
 
 \title{AIML426 Project 1 Report}
 \date{}
@@ -201,9 +202,14 @@ For the datasets used, the wrapperGA is the better option due to the use of cont
 \noindent Comparing the filterGA and the wrapperGA on discrete datasets could lead to different results where the filterGA excels due to it being designed for discrete features. \par
 \section*{Part 3}
 \subsection*{Individual Representation}
+Each individual needs to keep track of classification performance and ratio of selected features. The bit vector is used again for this problem where the classification performance is determined by using a wrapper classifier on the features subset and the ratio of selected features is determined by $\frac{\text{Number of 1s in bit vector}}{\text{Total length of bit vector}}$.
 \subsubsection*{Individual Generation}
+For individual generation, since there are no constraints it uses the same generation as used in Part 2 of generating a random bit value for each element in the vector. 
 \subsection*{Fitness Function}
+The fitness function is defined by two objectives: classification performance and the feature ratio. The problem’s focus is to maximize the classification performance, which is the same as minimizing the error rate, and minimize the selected feature ratio. Thus, the fitness function is defined as a tuple of (classification, -ratio). 
 \subsection*{Genetic Operators}
+The same single point split crossover operator that is used in the previous two problems is used for this problem. The mutation operator used here is flip bit mutation but since this problem uses the mutFlipBit operator from the Python library DEAP, the local search feature implemented in the previous two problems is not used here.  \par
+\noindent The datasets in the problem use these parameters for the GA: 
 \begin{center}
 \begin{tabular}{|c|c|c|}
 \hline
@@ -219,18 +225,84 @@ Mutation Rate & 0.3 & 0.3 \\
 \hline
 \end{tabular}
 \end{center}
+A higher population and generation number has been set for the clean1 dataset due to it having a greater number of features compared to the vehicle dataset. The same crossover and mutation rate is defined for both datasets to allow for a balance of exploration in the solution space and evolving towards the optimal solution. Tournament selection was used for the selection scheme for selecting parents to allow the GA to focus on optimizing the population. 
 \subsection*{Discussion}
 \subsubsection*{Hyper-Volume}
+For the hypervolume since the classification performance is maximized but the ratio is minimized, the reference point is defined to be at (0,1) since this is the point which all solutions in the Pareto front dominate since it represents the worst values the objectives can be. For the classifier accuracy 0 represents no instances that were correctly identified and for the feature ratio 1 represents maximum value of feature ratio. 
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+Seed & 94 & 102 & 151 \\
+\hline
+vehicle & 0.745 & 0.746 & 0.753 \\
+\hline
+clean1 & 0.903 & 0.882 & 0.890 \\
+\hline
+\end{tabular}
+\end{center}
+\subsubsection*{Error Rate}
+The error rate is calculated as $1.0 - \text{accuracy of classifier}$. This was calculated for each dataset and seed and are recorded in the table below: 
 \begin{center}
 \begin{tabular}{|c|c|c|c|c|}
 \hline
 Seed & 94 & 102 & 151 & All features selected\\
 \hline
-vehicle & & & & \\
+vehicle & 16.430\% & 16.548\% & 15.603\% & 21.158\%\\
 \hline
-clean1 & & & & \\
+clean1 & 0.840\% & 1.261\% & 1.05\% & 6.303\% \\
 \hline
 \end{tabular}
 \end{center}
+The hyper-volume values for clean1 are greater compared to vehicle and the error rates for clean1 are lower compared to vehicle. Indicating an inverse relation between hyper-volume and error rates, which is explained by a greater hyper-volume indicating that the Pareto front of solutions are further away from the reference point (0,1) and thus have better objective values.  
+\subsubsection*{Number of features selected}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+Seed & 94 & 102 & 151 \\
+\hline
+vehicle & 9 & 7 & 8 \\
+\hline
+clean1 & 42 & 37 & 36 \\
+\hline
+\end{tabular}
+\end{center}
+For the number of features selected, for the vehicle dataset roughly half of the features were selected in the best solution. For the clean1 dataset, despite a greater number of features being selected compared to the vehicle dataset, roughly a quarter of the features present in the dataset were selected. This indicates that in the clean1 dataset there were a larger number of redundant features compared to the vehicle dataset. 
+\subsubsection*{Pareto Front Charts}
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{vehicle_94.png}
+		\caption{Seed 94}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{vehicle_102.png}
+		\caption{Seed 102}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{vehicle_151.png}
+		\caption{Seed 151}
+	\end{subfigure}
+	\caption{Pareto front chart of vehicle dataset}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{clean1_94.png}
+		\caption{Seed 94}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{clean1_102.png}
+		\caption{Seed 102}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{clean1_151.png}
+		\caption{Seed 151}
+	\end{subfigure}
+	\caption{Pareto front chart of clean1 dataset}
+\end{figure}
+The vehicle dataset generated smooth Pareto fronts, indicating that it has converged for all seeds. This is expected because of the small number of features to select from. The clean1 dataset generated not as smooth fronts, indicating that because of the large number of features to select from, it still requires more generations to reach convergence. Even without achieving convergence the true Pareto front can be visually estimated from the generated points indicating that clean1 would achieve convergence with enough generations.
 \subsection*{Conclusion}
+NSGA2 can be used to determine a selection of features that has lower error rates compared to using all features, with NSGA2 achieving good results even before convergence. NSGA2 can still use the same genetic operators that GA uses with the difference being determining the elitism selection as NSGA2 and utilizing the domination relation and crowding distance in the fitness calculation. While NSGA2 works for 2 objectives, using more than 2 is not possible for this algorithm which limits the possible problems NSGA2 can be used for. 
+\section*{Part 4}
 \end{document}

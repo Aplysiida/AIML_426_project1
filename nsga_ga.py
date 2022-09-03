@@ -125,9 +125,9 @@ def draw_chart(final_set, data, labels):
     sns.scatterplot(x=x_values,y=y_values)
     plt.show()
 
-def get_best_accuracy(solution_set, data, labels):
+def get_best_accuracy_solution(solution_set, data, labels):
     accuracies = [evaluate_accuracy(solution, KNeighborsClassifier(n_neighbors=5), data, labels) for solution in solution_set]
-    return max(accuracies)
+    return max(accuracies), solution_set[accuracies.index(max(accuracies))]
 
 
 if __name__=="__main__":
@@ -172,8 +172,9 @@ if __name__=="__main__":
             )
             
             #calc feature accuracy of best solution
-            best_accuracy = get_best_accuracy(final_set, data, labels)
+            best_accuracy, best_solution = get_best_accuracy_solution(final_set, data, labels)
             print('best solution error rate = ',(1.0-best_accuracy))
+            print('best solution = ',best_solution,'\n feature count = ',np.count_nonzero(np.array(best_solution)))
 
             print('hypervolume of solution = ',hv)
             draw_chart(
