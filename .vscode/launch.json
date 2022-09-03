@@ -38,6 +38,14 @@
             ],
             "console": "integratedTerminal",
             "justMyCode": true
+        },
+        {
+            "name": "Python: Genetic Programming",
+            "type": "python",
+            "request": "launch",
+            "program": "symbol_gp.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
         }
     ]
 }

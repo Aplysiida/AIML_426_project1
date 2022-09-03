@@ -51,3 +51,19 @@ Wrapper-based fitness function:
 KNN is used for the wrapper fitness used in the classification performance since it has a good balance of accuracy and speed.
 Genetic Operators:
 Since this problem uses the same instance representation and problem used for Part 2, the same genetic operators are used for this problem.
+
+
+Part 4:
+Individual are represented using a tree of functions and terminals. These trees are generated using the ramp-half-and-half method where half of the trees are generated using the grow method and the other half generated using the full method to encourage diversity in the population.
+The minimum and maximum height of the trees generated initially is 1 and 4. 1 is chosen since having trees with smaller depth is not useful. 4 is chosen since depth 3 a full tree will have 15 nodes, thus is already a complicated tree. 
+
+Operators and Parameters chosen:
+For the genetic operators of selection, crossover and mutation: tournament selection, 1-point crossover and uniform mutation were chosen. 
+Tournament selection was chosen because it provides a balance between exploration of the tree instance space and optimization. The tournament size was set to 5 to achieve the exploration/optimzation balance as well.
+1-point crossover was chosen since swapping one subtree from each parent creates a unique enough child.
+Since there is no focus needed for creating more complicated trees or creating simpler trees, for mutation an uniform chance of mutating into a new subtree or just a terminal node is chosen. The possible subtrees generated in the mutation have sizes defined up to depth of 1, since having larger subtrees could make the trees too complicated in a few iterations.
+To avoid very complicated trees, a maximum height was defined to be at 17.
+
+Fitness:
+For the fitness cases, the range defined for the x values needs to small enough such that the $f(x <= 0)$ values is not so large that the GP might define the $f(x > 0)$ values as smooth in comparison. 30 x valuesevenly spread out in the range [-6.0, 15.0] were generated into the dataset to be used by the GP. More x values were defined when $x > 0$ to capture the #1/x effect on the formula and to capture the sin() pattern.
+For the fitness function, it is defined as the mean square error between the solution generated function and the problem defined function using the x values defined for the fitness cases. The aim of the GP is to minimising this mean square error value.
