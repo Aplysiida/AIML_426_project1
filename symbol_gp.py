@@ -61,6 +61,7 @@ def fitness(individual, x_values):
     return [np.sum(sq_errors)/len(sq_errors)] #return mean square error
 
 """
+Setup the DEAP toolbox for GP
 """
 def setup_toolbox(x_values, pset):
     toolbox = base.Toolbox()
