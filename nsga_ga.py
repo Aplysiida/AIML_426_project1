@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 
 import seaborn as sns
 
+import random
 import sys
 
 """
@@ -162,6 +163,7 @@ if __name__=="__main__":
 
         for seed in seeds:
             print('seed = ',seed)
+            random.seed(int(seed))
             rng = np.random.default_rng(seed=seed)
             toolbox = setup_toolbox(rng, data, labels, feature_num)
             final_set, hv = run_nsga2(

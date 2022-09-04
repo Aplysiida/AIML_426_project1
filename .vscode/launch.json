@@ -46,6 +46,14 @@
             "program": "symbol_gp.py",
             "console": "integratedTerminal",
             "justMyCode": true
+        },
+        {
+            "name": "Python: Particle Swarm",
+            "type": "python",
+            "request": "launch",
+            "program": "min_pso.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
         }
     ]
 }
