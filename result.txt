@@ -127,3 +127,14 @@ seed =  102
 best program fitness =  [0.49578927437088555]
 seed =  151
 best program fitness =  [	4103275287129]
+
+Part 5:
+at function:  rosenbrock
+mean value obtained  =  68.4176047088672
+std deviation obtained =  75.15795335833032
+at function:  griewanks
+mean value obtained  =  0.14817224523607062
+std deviation obtained =  0.053577460329047734
+Running  griewanks  for D= 50
+mean value obtained  =  0.7210402675926498
+std deviation obtained =  0.07837317219166096

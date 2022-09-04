@@ -107,7 +107,7 @@ if __name__=="__main__":
     problem_funcs = (rosenbrock, griewanks)
     func_names = ('rosenbrock','griewanks')
     #parameters for pso stored in tuple as (pop size, max iterations, inertia w, chi1, chi2)
-    pso_parameters = [(100, 100, 0.7, 1.5, 1.5), (100, 100, 0.7, 1.5, 1.5)]
+    pso_parameters = [(500, 100, 0.8, 1.5, 1.5), (200, 100, 1.1, 1.5, 1.5)]
     seeds = np.random.default_rng(seed = 15).integers(low=0, high=200, size=30)
 
     #run 30 times for each function
@@ -119,7 +119,7 @@ if __name__=="__main__":
             random.seed(int(seed))
             rng = np.random.default_rng(seed=seed)
             toolbox = setup_toolbox(
-                rosenbrock, 
+                func, 
                 rng, 
                 D, 
                 pmin=-30, pmax=30, 
@@ -128,7 +128,7 @@ if __name__=="__main__":
                 phi1=pso_parameter[3], phi2=pso_parameter[4]
             )
             best = run_pso(toolbox, pop_size=pso_parameter[0], max_iter=pso_parameter[1])
-            best_solutions_fitness.append(fitness(best, rosenbrock))
+            best_solutions_fitness.append(fitness(best, func))
         print('mean value obtained  = ',np.mean(best_solutions_fitness))
         print('std deviation obtained = ',np.std(best_solutions_fitness))
 
@@ -142,7 +142,7 @@ if __name__=="__main__":
         random.seed(int(seed))
         rng = np.random.default_rng(seed=seed)
         toolbox = setup_toolbox(
-            rosenbrock, 
+            problem_funcs[1], 
             rng, 
             D, 
             pmin=-30, pmax=30, 
@@ -151,6 +151,6 @@ if __name__=="__main__":
             phi1=pso_parameter[3], phi2=pso_parameter[4]
         )
         best = run_pso(toolbox, pop_size=pso_parameter[0], max_iter=pso_parameter[1])
-        best_solutions_fitness.append(fitness(best, rosenbrock))
+        best_solutions_fitness.append(fitness(best, problem_funcs[1]))
     print('mean value obtained  = ',np.mean(best_solutions_fitness))
     print('std deviation obtained = ',np.std(best_solutions_fitness))
