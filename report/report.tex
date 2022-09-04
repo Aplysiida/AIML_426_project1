@@ -391,4 +391,29 @@ The trees often had redundant calculations being done, such as $\frac{x}{x}$ whi
 \subsection*{Conclusion}
 It is possible to use GP to generate a function that mimics the values of the problem function without having to use conditional operators. This shows that GP is useful for recreating functions that mimic values of other functions that use different functions and terminals. With more iterations the GP will reach convergence where the generated function mimics the values of the problem function. For simplifying the function, stricter constraints on the depth of the trees or on the number of nodes allowed can be defined. But we will need to increase the number of generation and mutation rate to encourage exploration for the optimal solution. 
 \section*{Part 5}
+\subsection*{Particle Representation}
+The space that the particles explore is the range of possible values for the variables used by the function. The particle’s position represents a possible combination of values for the variables and the particle’s velocity represents how much to change these values in the next generation. No encoding is needed for this particle representation since it stores the variables’ values directly. For the topology, since we are searching for the global minimum, the neighborhood for each particle is set to all other particles. \par
+\subsection*{Parameters Used}
+For the parameters used, since the Griewanks function has a lot of local minima present, exploration is encouraged to prevent the particles getting trapped in these local minima. So the inertia weight is increased to 1.1. For the Rosenbrock function where there is an easily identifiable global minima, exploitation is encouraged to reach the global minima sooner and thus is set to 0.8. Since the global minimum is likely found in the average personal and global best values, $\phi_1 = \phi_2$ is set with both values being set to 1.5. For the population size, the Rosenbrock function is more sensitive to the changes in the variables and thus needs a greater population size of 500 to find the minima compared to Griewanks’ function with a population size of 200. \par
+\subsection*{Fitness}
+For the fitness function, since the minimum value of the function is being determined, the output of the problem function with the instance variables' values is used for the fitness. The smaller the output, the greater the instance’s fitness becomes to encourage minimization. \par
+\subsection*{Discussion}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+Problem Function & Mean & Standard Deviation \\
+\hline
+Rosenbrock D=20 & 68.418 & 75.158 \\
+\hline
+Griewanks D=20 & 0.148 & 0.0536 \\
+\hline
+Griewanks D=50 & 0.721 & 0.0784 \\
+\hline
+\end{tabular}
+\end{center}
+Rosenbrock's mean and standard deviation is much bigger than Griewanks' mean and standard deviation, this is because Rosenbrock has a much bigger output value range compared to Griewanks. \par 
+\noindent When comparing the two Griewanks functions with $D = 20$ and $D = 50$, the former has a smaller mean and standard suggesting that $D = 20$ converges earlier than $D = 50$. Which is expected since $D = 50$ indicates that the particle swarm has to explore more dimensions to find the global minima. \par
+\subsection*{Conclusion}
+Particle swarm optimization for finding the global optima for problems where manual differentation can be difficult and/or very time consuming to achieve. While it does not give the exact solution for such problems, it is useful for situations where having a rough estimate of the answer is enough. \par
+\noindent When comparing the result of searching for the global minima with different functions, the result needs to be standardized so that distribution of the function output values does not warp the comparison of fitness for different functions. \par
 \end{document}

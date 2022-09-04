@@ -24,5 +24,6 @@ The arguments used are:
     knapsack_ga.py "path/to/knapsack-data/folder"
     feature_ga.py "path/to/wbcd/folder" "path/to/sonar/folder"
     nsga_ga.py "path/to/vehicle/folder" "path/to/musk/folder"
+symbol_gp.py and min_pso.py takes in no arguments.
 
 The programs will output their fitness in the terminal and output their charts in the matplotlib window. For symbol_gp.py it outputs its GP tree charts into png files in the same folder the py file is located in.
